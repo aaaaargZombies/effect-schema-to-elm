@@ -1,8 +1,8 @@
-import * as Command from "@effect/cli/Command"
+import * as Command from "@effect/cli/Command";
 
-const command = Command.make("hello")
+const command = Command.make("hello");
 
 export const run = Command.run(command, {
   name: "Hello World",
-  version: "0.0.0"
-})
+  version: "0.0.0",
+});
