@@ -1,0 +1,570 @@
+{
+  "Char": {
+    "_tag": "Refinement",
+    "from": {
+      "_tag": "StringKeyword",
+      "annotations": {
+        "Symbol(effect/annotation/Title)": "string",
+        "Symbol(effect/annotation/Description)": "a string"
+      }
+    },
+    "annotations": {
+      "Symbol(effect/annotation/Title)": "ElmChar",
+      "Symbol(effect/annotation/JSONSchema)": {
+        "title": "ElmChar"
+      }
+    }
+  },
+  "String": {
+    "_tag": "StringKeyword",
+    "annotations": {
+      "Symbol(effect/annotation/Title)": "string",
+      "Symbol(effect/annotation/Description)": "a string"
+    }
+  },
+  "Int": {
+    "_tag": "Refinement",
+    "from": {
+      "_tag": "NumberKeyword",
+      "annotations": {
+        "Symbol(effect/annotation/Title)": "number",
+        "Symbol(effect/annotation/Description)": "a number"
+      }
+    },
+    "annotations": {
+      "Symbol(effect/annotation/Identifier)": "Int",
+      "Symbol(effect/annotation/Title)": "int",
+      "Symbol(effect/annotation/Description)": "an integer",
+      "Symbol(effect/annotation/JSONSchema)": {
+        "type": "integer"
+      }
+    }
+  },
+  "Float": {
+    "_tag": "NumberKeyword",
+    "annotations": {
+      "Symbol(effect/annotation/Title)": "number",
+      "Symbol(effect/annotation/Description)": "a number"
+    }
+  },
+  "ArrayInt": {
+    "_tag": "TupleType",
+    "elements": [],
+    "rest": [
+      {
+        "type": {
+          "_tag": "Refinement",
+          "from": {
+            "_tag": "NumberKeyword",
+            "annotations": {
+              "Symbol(effect/annotation/Title)": "number",
+              "Symbol(effect/annotation/Description)": "a number"
+            }
+          },
+          "annotations": {
+            "Symbol(effect/annotation/Identifier)": "Int",
+            "Symbol(effect/annotation/Title)": "int",
+            "Symbol(effect/annotation/Description)": "an integer",
+            "Symbol(effect/annotation/JSONSchema)": {
+              "type": "integer"
+            }
+          }
+        },
+        "annotations": {}
+      }
+    ],
+    "isReadonly": true,
+    "annotations": {
+      "Symbol(effect/annotation/Title)": "ElmArray"
+    }
+  },
+  "MapStringInt": {
+    "_tag": "Transformation",
+    "from": {
+      "_tag": "TupleType",
+      "elements": [],
+      "rest": [
+        {
+          "type": {
+            "_tag": "TupleType",
+            "elements": [
+              {
+                "type": {
+                  "_tag": "StringKeyword",
+                  "annotations": {
+                    "Symbol(effect/annotation/Title)": "string",
+                    "Symbol(effect/annotation/Description)": "a string"
+                  }
+                },
+                "isOptional": false,
+                "annotations": {}
+              },
+              {
+                "type": {
+                  "_tag": "Refinement",
+                  "from": {
+                    "_tag": "NumberKeyword",
+                    "annotations": {
+                      "Symbol(effect/annotation/Title)": "number",
+                      "Symbol(effect/annotation/Description)": "a number"
+                    }
+                  },
+                  "annotations": {
+                    "Symbol(effect/annotation/Identifier)": "Int",
+                    "Symbol(effect/annotation/Title)": "int",
+                    "Symbol(effect/annotation/Description)": "an integer",
+                    "Symbol(effect/annotation/JSONSchema)": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "isOptional": false,
+                "annotations": {}
+              }
+            ],
+            "rest": [],
+            "isReadonly": true,
+            "annotations": {}
+          },
+          "annotations": {}
+        }
+      ],
+      "isReadonly": true,
+      "annotations": {}
+    },
+    "to": {
+      "_tag": "Declaration",
+      "typeParameters": [
+        {
+          "_tag": "StringKeyword",
+          "annotations": {
+            "Symbol(effect/annotation/Title)": "string",
+            "Symbol(effect/annotation/Description)": "a string"
+          }
+        },
+        {
+          "_tag": "Refinement",
+          "from": {
+            "_tag": "NumberKeyword",
+            "annotations": {
+              "Symbol(effect/annotation/Title)": "number",
+              "Symbol(effect/annotation/Description)": "a number"
+            }
+          },
+          "annotations": {
+            "Symbol(effect/annotation/Identifier)": "Int",
+            "Symbol(effect/annotation/Title)": "int",
+            "Symbol(effect/annotation/Description)": "an integer",
+            "Symbol(effect/annotation/JSONSchema)": {
+              "type": "integer"
+            }
+          }
+        }
+      ],
+      "annotations": {
+        "Symbol(effect/annotation/Description)": "Map<string, Int>"
+      }
+    },
+    "annotations": {}
+  },
+  "Tuple2vals": {
+    "_tag": "TupleType",
+    "elements": [
+      {
+        "type": {
+          "_tag": "StringKeyword",
+          "annotations": {
+            "Symbol(effect/annotation/Title)": "string",
+            "Symbol(effect/annotation/Description)": "a string"
+          }
+        },
+        "isOptional": false,
+        "annotations": {}
+      },
+      {
+        "type": {
+          "_tag": "Refinement",
+          "from": {
+            "_tag": "NumberKeyword",
+            "annotations": {
+              "Symbol(effect/annotation/Title)": "number",
+              "Symbol(effect/annotation/Description)": "a number"
+            }
+          },
+          "annotations": {
+            "Symbol(effect/annotation/Identifier)": "Int",
+            "Symbol(effect/annotation/Title)": "int",
+            "Symbol(effect/annotation/Description)": "an integer",
+            "Symbol(effect/annotation/JSONSchema)": {
+              "type": "integer"
+            }
+          }
+        },
+        "isOptional": false,
+        "annotations": {}
+      }
+    ],
+    "rest": [],
+    "isReadonly": true,
+    "annotations": {}
+  },
+  "Tuple3vals": {
+    "_tag": "TupleType",
+    "elements": [
+      {
+        "type": {
+          "_tag": "StringKeyword",
+          "annotations": {
+            "Symbol(effect/annotation/Title)": "string",
+            "Symbol(effect/annotation/Description)": "a string"
+          }
+        },
+        "isOptional": false,
+        "annotations": {}
+      },
+      {
+        "type": {
+          "_tag": "Refinement",
+          "from": {
+            "_tag": "NumberKeyword",
+            "annotations": {
+              "Symbol(effect/annotation/Title)": "number",
+              "Symbol(effect/annotation/Description)": "a number"
+            }
+          },
+          "annotations": {
+            "Symbol(effect/annotation/Identifier)": "Int",
+            "Symbol(effect/annotation/Title)": "int",
+            "Symbol(effect/annotation/Description)": "an integer",
+            "Symbol(effect/annotation/JSONSchema)": {
+              "type": "integer"
+            }
+          }
+        },
+        "isOptional": false,
+        "annotations": {}
+      },
+      {
+        "type": {
+          "_tag": "StringKeyword",
+          "annotations": {
+            "Symbol(effect/annotation/Title)": "string",
+            "Symbol(effect/annotation/Description)": "a string"
+          }
+        },
+        "isOptional": false,
+        "annotations": {}
+      }
+    ],
+    "rest": [],
+    "isReadonly": true,
+    "annotations": {}
+  },
+  "Unit": {
+    "_tag": "TupleType",
+    "elements": [],
+    "rest": [],
+    "isReadonly": true,
+    "annotations": {}
+  },
+  "Set": {
+    "_tag": "Transformation",
+    "from": {
+      "_tag": "TupleType",
+      "elements": [],
+      "rest": [
+        {
+          "type": {
+            "_tag": "NumberKeyword",
+            "annotations": {
+              "Symbol(effect/annotation/Title)": "number",
+              "Symbol(effect/annotation/Description)": "a number"
+            }
+          },
+          "annotations": {}
+        }
+      ],
+      "isReadonly": true,
+      "annotations": {}
+    },
+    "to": {
+      "_tag": "Declaration",
+      "typeParameters": [
+        {
+          "_tag": "NumberKeyword",
+          "annotations": {
+            "Symbol(effect/annotation/Title)": "number",
+            "Symbol(effect/annotation/Description)": "a number"
+          }
+        }
+      ],
+      "annotations": {
+        "Symbol(effect/annotation/Description)": "Set<number>"
+      }
+    },
+    "annotations": {}
+  },
+  "Record": {
+    "_tag": "TypeLiteral",
+    "propertySignatures": [
+      {
+        "name": "x",
+        "type": {
+          "_tag": "NumberKeyword",
+          "annotations": {
+            "Symbol(effect/annotation/Title)": "number",
+            "Symbol(effect/annotation/Description)": "a number"
+          }
+        },
+        "isOptional": false,
+        "isReadonly": true,
+        "annotations": {}
+      },
+      {
+        "name": "y",
+        "type": {
+          "_tag": "NumberKeyword",
+          "annotations": {
+            "Symbol(effect/annotation/Title)": "number",
+            "Symbol(effect/annotation/Description)": "a number"
+          }
+        },
+        "isOptional": false,
+        "isReadonly": true,
+        "annotations": {}
+      }
+    ],
+    "indexSignatures": [],
+    "annotations": {}
+  },
+  "Alias": {
+    "_tag": "TypeLiteral",
+    "propertySignatures": [
+      {
+        "name": "name",
+        "type": {
+          "_tag": "Literal",
+          "literal": "Name",
+          "annotations": {}
+        },
+        "isOptional": false,
+        "isReadonly": true,
+        "annotations": {}
+      },
+      {
+        "name": "type",
+        "type": {
+          "_tag": "TypeLiteral",
+          "propertySignatures": [
+            {
+              "name": "x",
+              "type": {
+                "_tag": "NumberKeyword",
+                "annotations": {
+                  "Symbol(effect/annotation/Title)": "number",
+                  "Symbol(effect/annotation/Description)": "a number"
+                }
+              },
+              "isOptional": false,
+              "isReadonly": true,
+              "annotations": {}
+            },
+            {
+              "name": "y",
+              "type": {
+                "_tag": "NumberKeyword",
+                "annotations": {
+                  "Symbol(effect/annotation/Title)": "number",
+                  "Symbol(effect/annotation/Description)": "a number"
+                }
+              },
+              "isOptional": false,
+              "isReadonly": true,
+              "annotations": {}
+            }
+          ],
+          "indexSignatures": [],
+          "annotations": {}
+        },
+        "isOptional": false,
+        "isReadonly": true,
+        "annotations": {}
+      }
+    ],
+    "indexSignatures": [],
+    "annotations": {}
+  },
+  "Type": {
+    "_tag": "TypeLiteral",
+    "propertySignatures": [
+      {
+        "name": "name",
+        "type": {
+          "_tag": "Literal",
+          "literal": "TrafficLight",
+          "annotations": {}
+        },
+        "isOptional": false,
+        "isReadonly": true,
+        "annotations": {}
+      },
+      {
+        "name": "kinds",
+        "type": {
+          "_tag": "TupleType",
+          "elements": [
+            {
+              "type": {
+                "_tag": "TypeLiteral",
+                "propertySignatures": [
+                  {
+                    "name": "_tag",
+                    "type": {
+                      "_tag": "Literal",
+                      "literal": "Green",
+                      "annotations": {}
+                    },
+                    "isOptional": false,
+                    "isReadonly": true,
+                    "annotations": {}
+                  },
+                  {
+                    "name": "data",
+                    "type": {
+                      "_tag": "TupleType",
+                      "elements": [
+                        {
+                          "type": {
+                            "_tag": "BooleanKeyword",
+                            "annotations": {
+                              "Symbol(effect/annotation/Title)": "boolean",
+                              "Symbol(effect/annotation/Description)": "a boolean"
+                            }
+                          },
+                          "isOptional": false,
+                          "annotations": {}
+                        }
+                      ],
+                      "rest": [],
+                      "isReadonly": true,
+                      "annotations": {}
+                    },
+                    "isOptional": false,
+                    "isReadonly": true,
+                    "annotations": {}
+                  }
+                ],
+                "indexSignatures": [],
+                "annotations": {}
+              },
+              "isOptional": false,
+              "annotations": {}
+            },
+            {
+              "type": {
+                "_tag": "TypeLiteral",
+                "propertySignatures": [
+                  {
+                    "name": "_tag",
+                    "type": {
+                      "_tag": "Literal",
+                      "literal": "Amber",
+                      "annotations": {}
+                    },
+                    "isOptional": false,
+                    "isReadonly": true,
+                    "annotations": {}
+                  },
+                  {
+                    "name": "data",
+                    "type": {
+                      "_tag": "TupleType",
+                      "elements": [
+                        {
+                          "type": {
+                            "_tag": "BooleanKeyword",
+                            "annotations": {
+                              "Symbol(effect/annotation/Title)": "boolean",
+                              "Symbol(effect/annotation/Description)": "a boolean"
+                            }
+                          },
+                          "isOptional": false,
+                          "annotations": {}
+                        }
+                      ],
+                      "rest": [],
+                      "isReadonly": true,
+                      "annotations": {}
+                    },
+                    "isOptional": false,
+                    "isReadonly": true,
+                    "annotations": {}
+                  }
+                ],
+                "indexSignatures": [],
+                "annotations": {}
+              },
+              "isOptional": false,
+              "annotations": {}
+            },
+            {
+              "type": {
+                "_tag": "TypeLiteral",
+                "propertySignatures": [
+                  {
+                    "name": "_tag",
+                    "type": {
+                      "_tag": "Literal",
+                      "literal": "Red",
+                      "annotations": {}
+                    },
+                    "isOptional": false,
+                    "isReadonly": true,
+                    "annotations": {}
+                  },
+                  {
+                    "name": "data",
+                    "type": {
+                      "_tag": "TupleType",
+                      "elements": [
+                        {
+                          "type": {
+                            "_tag": "BooleanKeyword",
+                            "annotations": {
+                              "Symbol(effect/annotation/Title)": "boolean",
+                              "Symbol(effect/annotation/Description)": "a boolean"
+                            }
+                          },
+                          "isOptional": false,
+                          "annotations": {}
+                        }
+                      ],
+                      "rest": [],
+                      "isReadonly": true,
+                      "annotations": {}
+                    },
+                    "isOptional": false,
+                    "isReadonly": true,
+                    "annotations": {}
+                  }
+                ],
+                "indexSignatures": [],
+                "annotations": {}
+              },
+              "isOptional": false,
+              "annotations": {}
+            }
+          ],
+          "rest": [],
+          "isReadonly": true,
+          "annotations": {}
+        },
+        "isOptional": false,
+        "isReadonly": true,
+        "annotations": {}
+      }
+    ],
+    "indexSignatures": [],
+    "annotations": {}
+  }
+}
