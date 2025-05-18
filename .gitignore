@@ -1,4 +1,5 @@
 coverage/
+generated/
 *.tsbuildinfo
 node_modules/
 yarn-error.log
