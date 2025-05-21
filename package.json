@@ -20,9 +20,12 @@
     "check": "tsc -b tsconfig.json",
     "lint": "eslint \"**/{src,test,examples,scripts,dtslint}/**/*.{ts,mjs}\"",
     "lint-fix": "pnpm lint --fix",
-    "test": "vitest run",
+    "test:ts": "vitest run",
+    "test:setup": "tsx ./scripts/setup.ts > ./generated/TestData.elm",
+    "test:elm": "pnpm run test:setup && npx elm-test-rs",
     "coverage": "vitest run --coverage",
-    "copy-package-json": "tsx scripts/copy-package-json.ts"
+    "copy-package-json": "tsx scripts/copy-package-json.ts",
+    "generate": "tsx src/generate.ts"
   },
   "devDependencies": {
     "@effect/cli": "latest",
@@ -39,6 +42,7 @@
     "@typescript-eslint/parser": "^8.32.1",
     "effect": "latest",
     "elm-codegen": "^0.6.1",
+    "elm-tooling": "^1.15.1",
     "eslint": "^8.57.1",
     "eslint-import-resolver-typescript": "^3.10.1",
     "eslint-plugin-codegen": "0.28.0",

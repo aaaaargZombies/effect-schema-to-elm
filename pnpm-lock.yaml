@@ -50,6 +50,9 @@ importers:
       elm-codegen:
         specifier: ^0.6.1
         version: 0.6.1
+      elm-tooling:
+        specifier: ^1.15.1
+        version: 1.15.1
       eslint:
         specifier: ^8.57.1
         version: 8.57.1
@@ -1297,6 +1300,10 @@ packages:
 
   elm-codegen@0.6.1:
     resolution: {integrity: sha512-mbVmK4fqW+wtYzTZhJSuT42KrQZMRTueYerCvo09sO5v7QdDGw3qeG/rL1vLH0q2GJF44lXhyBo4lv6azSBOQQ==}
+    hasBin: true
+
+  elm-tooling@1.15.1:
+    resolution: {integrity: sha512-+rRYa7gzz6l2/Ip2i197MqkW5abOwPOP/+WlyyatLDeDhh+JR0HUMlZJYenCYodBeG/xW5xW3pRYQ2onf5bIAw==}
     hasBin: true
 
   emoji-regex@8.0.0:
@@ -3947,6 +3954,8 @@ snapshots:
       chokidar: 3.6.0
       commander: 8.3.0
       node-elm-compiler: 5.0.6
+
+  elm-tooling@1.15.1: {}
 
   emoji-regex@8.0.0: {}
 

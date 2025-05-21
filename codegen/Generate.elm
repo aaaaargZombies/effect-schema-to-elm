@@ -47,40 +47,6 @@ astToDeclaration n ast =
 
 
 
-{- Some string formatting -}
-
-
-getFileName : String -> String
-getFileName path =
-    let
-        fileName =
-            String.split "/" path
-                |> List.reverse
-                |> List.head
-                |> Maybe.withDefault path
-    in
-    fileName
-        |> String.replace "." "_"
-        |> String.replace "-" "_"
-        |> String.replace "_" "_"
-        |> String.replace " " "_"
-        |> String.replace "/" "_"
-        |> String.replace "’" "_"
-        |> String.replace "'" "_"
-        |> decapitalize
-
-
-decapitalize : String -> String
-decapitalize str =
-    case String.uncons str of
-        Nothing ->
-            str
-
-        Just ( first, tail ) ->
-            String.fromChar (Char.toLower first) ++ tail
-
-
-
 {-
    ▄▄▄▄    ▄▄▄▄  ▄    ▄   ▄▄   ▄▄▄▄▄  ▄▄   ▄
    █   ▀▄ ▄▀  ▀▄ ██  ██   ██     █    █▀▄  █
