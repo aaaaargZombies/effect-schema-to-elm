@@ -66,6 +66,9 @@ astToName ast =
         String_ ->
             "String"
 
+        List_ a ->
+            "List" ++ astToName a
+
         Maybe_ a ->
             "Maybe" ++ astToName a
 
@@ -86,6 +89,7 @@ type AST
     | Float_
     | Int_
     | String_
+    | List_ AST
     | Maybe_ AST
 
 
@@ -128,6 +132,7 @@ decodeAST =
 
         -- Containers
         , decodeMaybe
+        , decodeList
         ]
 
 
@@ -241,6 +246,32 @@ decodeMaybe =
             )
 
 
+decodeList : Json.Decode.Decoder AST
+decodeList =
+    Json.Decode.map2 Tuple.pair
+        (Json.Decode.at
+            [ "annotations", "Symbol(ElmType)" ]
+            Json.Decode.string
+        )
+        (Json.Decode.at
+            [ "rest" ]
+            (Json.Decode.lazy (\_ -> Json.Decode.list (Json.Decode.field "type" decodeAST)))
+        )
+        |> Json.Decode.andThen
+            (\( elmType, asts ) ->
+                if elmType == "List" then
+                    case asts of
+                        [ ast ] ->
+                            Json.Decode.succeed <| List_ ast
+
+                        _ ->
+                            Json.Decode.fail "Failed to decode type param"
+
+                else
+                    Json.Decode.fail "Not a List"
+            )
+
+
 
 {-
    ▄▄▄▄   ▄▄▄▄▄▄   ▄▄▄   ▄▄▄▄  ▄▄▄▄   ▄▄▄▄▄▄ ▄▄▄▄▄   ▄▄▄▄
@@ -288,6 +319,9 @@ astToDecoder ast =
 
         Int_ ->
             Gen.Json.Decode.int
+
+        List_ ast_ ->
+            Gen.Json.Decode.list (astToDecoder ast_)
 
         Maybe_ ast_ ->
             Gen.Json.Decode.oneOf
@@ -349,6 +383,9 @@ astToAnnotation ast =
 
         String_ ->
             Type.string
+
+        List_ a ->
+            Type.list <| astToAnnotation a
 
         Maybe_ a ->
             Type.maybe <| astToAnnotation a

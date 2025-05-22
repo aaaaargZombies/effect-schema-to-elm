@@ -7,6 +7,7 @@ const dataTypes = [
   ElmData.Float,
   ElmData.Int,
   ElmData.String,
+  ElmData.List(ElmData.String),
   ElmData.Maybe(ElmData.Int),
   ElmData.Maybe(ElmData.Char),
 ].map((s) => JSON.parse(JSON.stringify(s.ast)));
@@ -14,7 +15,6 @@ const dataTypes = [
 CodeGen.run("Generate.elm", {
   debug: true,
   output: "generated",
-  // flags: found,
   flags: dataTypes,
   cwd: "./codegen",
 });

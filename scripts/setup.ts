@@ -1,4 +1,3 @@
-import { Schema } from "effect";
 import * as Data from "../src/Data.js";
 import * as Utils from "./utils.js";
 
@@ -10,23 +9,13 @@ const testData = [
   Data.Int,
   Data.String,
   // Containers
+  Data.List(Data.String),
   Data.Maybe(Data.Int),
   Data.Maybe(Data.Char),
 ].map((s) => {
   const ast = JSON.parse(JSON.stringify(s.ast));
   const name: string = Utils.astToName(ast);
-  const data = Utils.fuzz(100)(s)((cs) => {
-    // TODO - find better solution for this
-    // guard against some weird stuff that seems to break JSON parsing
-    if (name === "Char") {
-      return cs.filter((c) => !["\\", '"'].includes(c));
-    }
-    if (name === "String") {
-      return cs.map((c) => c.replaceAll(/[\\"]/g, ""));
-    }
-
-    return cs;
-  });
+  const data = Utils.fuzz(100)(s);
   return ["json" + name, data];
 });
 

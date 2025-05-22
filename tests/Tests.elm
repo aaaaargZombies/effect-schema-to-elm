@@ -31,6 +31,10 @@ suite =
             \_ ->
                 Json.Decode.decodeString (Json.Decode.list MyFirstFile.boolDecoder) TestData.jsonBool
                     |> Expect.ok
+        , Test.test "List String decoder" <|
+            \_ ->
+                Json.Decode.decodeString (Json.Decode.list MyFirstFile.listStringDecoder) TestData.jsonListString
+                    |> Expect.ok
         , Test.test "Maybe Int decoder" <|
             \_ ->
                 Json.Decode.decodeString (Json.Decode.list MyFirstFile.maybeIntDecoder) TestData.jsonMaybeInt

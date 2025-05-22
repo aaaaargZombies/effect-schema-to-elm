@@ -1,33 +1,34 @@
-import { Effect, pipe, Arbitrary, FastCheck, Schema } from "effect";
+import { Arbitrary, FastCheck, Schema } from "effect";
+
+export const pojo = (a) => JSON.parse(JSON.stringify(a));
 
 export const astToName = (ast) => {
   const name: string = ast.annotations["Symbol(ElmType)"];
   if (name === "Maybe") {
     return name + astToName(ast.to.typeParameters[0]);
   }
+  if (name === "List") {
+    return name + astToName(ast.rest[0].type);
+  }
   return name;
 };
 
-export const fuzz =
-  // TODO - how to get the continuation function to understand the types of the schema
-  (n: number) => (schema: Schema.Schema.Any) => (continuation: (a) => a) => {
-    const arb = Arbitrary.make(schema);
-    const vals = FastCheck.sample(arb, n);
-    return continuation(vals);
-  };
+const stringify = (s: string) => JSON.stringify(s).replaceAll(/\\/g, "\\\\");
 
-const module = (name: string) => `module ${name} exposing (..)\n\n`;
+export const fuzz = (n: number) => (schema: Schema.Schema.Any) =>
+  FastCheck.sample(Arbitrary.make(schema), n);
+
+const module = (name: string) => `module ${name} exposing (..)\n\n\n`;
 const top = (name: string) => `${name} = """`;
-const bottom = `    """\n\n`;
+const bottom = `    """\n\n\n`;
 
 type Content = [string, any];
 
 export const printElm = (moduleName: string, expressions: Content[]) => {
   console.log(module(moduleName));
-  // log all the expressions...
   expressions.forEach(([name, content]) => {
     console.log(top(name));
-    console.log(JSON.stringify(content));
+    console.log(stringify(content));
     console.log(bottom);
   });
 };
