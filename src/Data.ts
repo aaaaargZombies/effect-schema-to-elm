@@ -1,4 +1,5 @@
-import { JSONSchema, Schema } from "effect";
+import { JSONSchema, pipe, Schema } from "effect";
+import { cons } from "effect/List";
 
 const ElmType = Symbol.for("ElmType");
 
@@ -8,9 +9,8 @@ const ElmType = Symbol.for("ElmType");
 //
 /// Basics
 // Char
-// const Char = Schema.String; // can I just let the elm gen compiler find the fault?
 export const Char = Schema.String.pipe(
-  Schema.filter((s) => s.length === 1 || "A Char is a single character long"),
+  Schema.length(1),
   Schema.annotations({
     [ElmType]: "Char",
     title: "ElmChar",
@@ -35,9 +35,15 @@ export const Int = Schema.Int.pipe(
   }),
 );
 // Float
-export const Float = Schema.Number.pipe(
+export const Float = Schema.Finite.pipe(
   Schema.annotations({
     [ElmType]: "Float",
+  }),
+);
+// Bool
+export const Bool = Schema.Boolean.pipe(
+  Schema.annotations({
+    [ElmType]: "Bool",
   }),
 );
 

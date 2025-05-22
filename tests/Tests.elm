@@ -12,12 +12,31 @@ suite =
     Test.describe "generated decoders vs Effect arbitraries"
         [ Test.test "Char decoder" <|
             \_ ->
-                Json.Decode.decodeString (Json.Decode.list MyFirstFile.effectDataDecoder1) TestData.charJson
-                    |> Debug.log "CHARS"
+                Json.Decode.decodeString (Json.Decode.list MyFirstFile.charDecoder) TestData.jsonChar
                     |> Expect.ok
         , Test.test "Float decoder" <|
             \_ ->
-                Json.Decode.decodeString (Json.Decode.list MyFirstFile.effectDataDecoder0) TestData.floatJson
-                    |> Debug.log "CHARS"
+                Json.Decode.decodeString (Json.Decode.list MyFirstFile.floatDecoder) TestData.jsonFloat
+                    |> Debug.log "FAIL"
+                    |> Expect.ok
+        , Test.test "String decoder" <|
+            \_ ->
+                Json.Decode.decodeString (Json.Decode.list MyFirstFile.stringDecoder) TestData.jsonString
+                    |> Expect.ok
+        , Test.test "Int decoder" <|
+            \_ ->
+                Json.Decode.decodeString (Json.Decode.list MyFirstFile.intDecoder) TestData.jsonInt
+                    |> Expect.ok
+        , Test.test "Bool decoder" <|
+            \_ ->
+                Json.Decode.decodeString (Json.Decode.list MyFirstFile.boolDecoder) TestData.jsonBool
+                    |> Expect.ok
+        , Test.test "Maybe Int decoder" <|
+            \_ ->
+                Json.Decode.decodeString (Json.Decode.list MyFirstFile.maybeIntDecoder) TestData.jsonMaybeInt
+                    |> Expect.ok
+        , Test.test "Maybe Char decoder" <|
+            \_ ->
+                Json.Decode.decodeString (Json.Decode.list MyFirstFile.maybeCharDecoder) TestData.jsonMaybeChar
                     |> Expect.ok
         ]

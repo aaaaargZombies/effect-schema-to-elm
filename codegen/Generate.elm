@@ -10,7 +10,9 @@ import Elm.Op
 import Gen.CodeGen.Generate as Generate
 import Gen.Json.Decode
 import Gen.String
+import Gen.Tuple
 import Json.Decode
+import Json.Encode
 
 
 
@@ -26,24 +28,46 @@ import Json.Decode
 main : Program Json.Decode.Value () ()
 main =
     Generate.fromJson
-        (Json.Decode.list decodeEffectData)
+        (Json.Decode.list decodeAST)
         generate
 
 
 generate : List AST -> List Elm.File
-generate asts =
+generate data =
     [ Elm.file [ "MyFirstFile" ]
-        (List.indexedMap
+        (List.map
             astToDeclaration
-            asts
+            data
         )
     ]
 
 
-astToDeclaration : Int -> AST -> Elm.Declaration
-astToDeclaration n ast =
-    Elm.declaration ("EffectDataDecoder" ++ String.fromInt n)
-        (astToDecoder ast)
+astToDeclaration : AST -> Elm.Declaration
+astToDeclaration ast =
+    Elm.declaration (astToName ast ++ "Decoder")
+        (Elm.withType (Gen.Json.Decode.annotation_.decoder (astToAnnotation ast)) (astToDecoder ast))
+
+
+astToName : AST -> String
+astToName ast =
+    case ast of
+        Bool_ ->
+            "Bool"
+
+        Char_ ->
+            "Char"
+
+        Float_ ->
+            "Float"
+
+        Int_ ->
+            "Int"
+
+        String_ ->
+            "String"
+
+        Maybe_ a ->
+            "Maybe" ++ astToName a
 
 
 
@@ -57,10 +81,12 @@ astToDeclaration n ast =
 
 
 type AST
-    = Float_
+    = Bool_
     | Char_
-    | String_
+    | Float_
     | Int_
+    | String_
+    | Maybe_ AST
 
 
 
@@ -73,13 +99,52 @@ type AST
 -}
 
 
-decodeEffectData : Json.Decode.Decoder AST
+type alias EffectData =
+    { ast : AST
+    , name : String
+    }
+
+
+
+{- Basics -}
+
+
+decodeEffectData : Json.Decode.Decoder EffectData
 decodeEffectData =
+    Json.Decode.map2 EffectData
+        (Json.Decode.field "ast" decodeAST)
+        (Json.Decode.field "name" Json.Decode.string)
+
+
+decodeAST : Json.Decode.Decoder AST
+decodeAST =
     Json.Decode.oneOf
-        [ decodeFloat
+        [ -- Basics
+          decodeBool
         , decodeChar
+        , decodeFloat
+        , decodeInt
         , decodeString
+
+        -- Containers
+        , decodeMaybe
         ]
+
+
+decodeBool : Json.Decode.Decoder AST
+decodeBool =
+    Json.Decode.andThen
+        (\id ->
+            if id == "Bool" then
+                Json.Decode.succeed Bool_
+
+            else
+                Json.Decode.fail "Not a Bool"
+        )
+        (Json.Decode.at
+            [ "annotations", "Symbol(ElmType)" ]
+            Json.Decode.string
+        )
 
 
 decodeChar : Json.Decode.Decoder AST
@@ -94,7 +159,6 @@ decodeChar =
         )
         (Json.Decode.at
             [ "annotations", "Symbol(ElmType)" ]
-            -- [ "Refinement", "annotations", "Symbol(ElmType)" ]
             Json.Decode.string
         )
 
@@ -110,7 +174,6 @@ decodeFloat =
                 Json.Decode.fail "Not a float"
         )
         (Json.Decode.at
-            -- [ "NumberKeyword", "annotations", "Symbol(ElmType)" ]
             [ "annotations", "Symbol(ElmType)" ]
             Json.Decode.string
         )
@@ -149,6 +212,36 @@ decodeInt =
 
 
 
+{- Containers -}
+
+
+decodeMaybe : Json.Decode.Decoder AST
+decodeMaybe =
+    Json.Decode.map2 Tuple.pair
+        (Json.Decode.at
+            [ "annotations", "Symbol(ElmType)" ]
+            Json.Decode.string
+        )
+        (Json.Decode.at
+            [ "to", "typeParameters" ]
+            (Json.Decode.lazy (\_ -> Json.Decode.list decodeAST))
+        )
+        |> Json.Decode.andThen
+            (\( elmType, asts ) ->
+                if elmType == "Maybe" then
+                    case asts of
+                        [ ast ] ->
+                            Json.Decode.succeed <| Maybe_ ast
+
+                        _ ->
+                            Json.Decode.fail "Failed to decode type param"
+
+                else
+                    Json.Decode.fail "Not a Maybe"
+            )
+
+
+
 {-
    ▄▄▄▄   ▄▄▄▄▄▄   ▄▄▄   ▄▄▄▄  ▄▄▄▄   ▄▄▄▄▄▄ ▄▄▄▄▄   ▄▄▄▄
    █   ▀▄ █      ▄▀   ▀ ▄▀  ▀▄ █   ▀▄ █      █   ▀█ █▀   ▀
@@ -161,8 +254,8 @@ decodeInt =
 astToDecoder : AST -> Elm.Expression
 astToDecoder ast =
     case ast of
-        Float_ ->
-            Gen.Json.Decode.float
+        Bool_ ->
+            Gen.Json.Decode.bool
 
         Char_ ->
             Gen.Json.Decode.string
@@ -190,11 +283,36 @@ astToDecoder ast =
                             ]
                     )
 
-        String_ ->
-            Gen.Json.Decode.string
+        Float_ ->
+            Gen.Json.Decode.float
 
         Int_ ->
             Gen.Json.Decode.int
+
+        Maybe_ ast_ ->
+            Gen.Json.Decode.oneOf
+                [ Gen.Json.Decode.map2 Elm.tuple
+                    (Gen.Json.Decode.field "_tag" Gen.Json.Decode.string)
+                    (Gen.Json.Decode.field "value" (astToDecoder ast_))
+                    |> Gen.Json.Decode.andThen
+                        (\tuple ->
+                            Elm.ifThen
+                                (Elm.Op.equal (Gen.Tuple.first tuple) (Elm.string "Some"))
+                                (Gen.Json.Decode.succeed (Elm.just (Gen.Tuple.second tuple)))
+                                (Gen.Json.Decode.fail "Not a Just")
+                        )
+                , Gen.Json.Decode.andThen
+                    (\tag ->
+                        Elm.ifThen
+                            (Elm.Op.equal tag (Elm.string "None"))
+                            (Gen.Json.Decode.succeed Elm.nothing)
+                            (Gen.Json.Decode.fail "Not a Nothing")
+                    )
+                    (Gen.Json.Decode.field "_tag" Gen.Json.Decode.string)
+                ]
+
+        String_ ->
+            Gen.Json.Decode.string
 
 
 
@@ -212,3 +330,25 @@ astToDecoder ast =
     █▄▄█  █  █ █ █  █ █ █    █   █     █▄▄█    █      █    █    █ █  █ █     ▀█
    █    █ █   ██ █   ██  █▄▄█    █    █    █   █    ▄▄█▄▄   █▄▄█  █   ██ ▀▄▄▄█▀
 -}
+
+
+astToAnnotation : AST -> Type.Annotation
+astToAnnotation ast =
+    case ast of
+        Bool_ ->
+            Type.bool
+
+        Char_ ->
+            Type.char
+
+        Float_ ->
+            Type.float
+
+        Int_ ->
+            Type.int
+
+        String_ ->
+            Type.string
+
+        Maybe_ a ->
+            Type.maybe <| astToAnnotation a
