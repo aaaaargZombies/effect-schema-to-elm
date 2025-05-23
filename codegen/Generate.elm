@@ -449,7 +449,11 @@ decodeResult =
         )
         (Json.Decode.at
             [ "to", "typeParameters" ]
-            (Json.Decode.lazy (\_ -> Json.Decode.list decodeAST))
+            (Json.Decode.oneOf
+                [ Json.Decode.lazy (\_ -> Json.Decode.list decodeAST)
+                , decodeNestHelper
+                ]
+            )
         )
         |> Json.Decode.andThen
             (\( elmType, asts ) ->
@@ -464,3 +468,11 @@ decodeResult =
                 else
                     Json.Decode.fail "Not a Result"
             )
+
+
+decodeNestHelper : Json.Decode.Decoder (List AST)
+decodeNestHelper =
+    Json.Decode.lazy
+        (\_ ->
+            Json.Decode.at [ "typeParameters" ] (Json.Decode.list decodeAST)
+        )

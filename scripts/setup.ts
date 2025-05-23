@@ -13,6 +13,10 @@ const testData = [
   Data.Maybe(Data.Int),
   Data.Maybe(Data.Char),
   Data.Result({ error: Data.String, value: Data.Int }),
+  Data.Result({
+    error: Data.String,
+    value: Data.Maybe(Data.List(Data.String)),
+  }),
 ].map((s) => {
   const ast = JSON.parse(JSON.stringify(s.ast));
   const name: string = Utils.astToName(ast);

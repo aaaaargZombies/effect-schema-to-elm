@@ -97,12 +97,12 @@ export const Record = (arg: { [key: string]: Schema.Schema.Any }) =>
 export const Result = (args: {
   error: Schema.Schema.Any;
   value: Schema.Schema.Any;
-}) =>
-  Schema.Either({ left: args.error, right: args.value }).pipe(
-    Schema.annotations({
-      [ElmType]: "Result",
-    }),
-  );
+}) => Schema.Either({ left: args.error, right: args.value });
+// Schema.Either({ left: args.error, right: args.value }).pipe(
+//   Schema.annotations({
+//     [ElmType]: "Result",
+//   }),
+// );
 
 // Set
 export const Set_ = (a: Schema.Schema.Any) => Schema.Set(a);
