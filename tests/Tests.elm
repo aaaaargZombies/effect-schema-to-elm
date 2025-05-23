@@ -2,7 +2,7 @@ module Tests exposing (..)
 
 import Expect
 import Json.Decode
-import MyFirstFile
+import Generated.EffectDecoders as EffectDecoders
 import Test exposing (Test)
 import TestData
 
@@ -12,39 +12,39 @@ suite =
     Test.describe "generated decoders vs Effect arbitraries"
         [ Test.test "Char decoder" <|
             \_ ->
-                Json.Decode.decodeString (Json.Decode.list MyFirstFile.charDecoder) TestData.jsonChar
+                Json.Decode.decodeString (Json.Decode.list EffectDecoders.charDecoder) TestData.jsonChar
                     |> Expect.ok
         , Test.test "Float decoder" <|
             \_ ->
-                Json.Decode.decodeString (Json.Decode.list MyFirstFile.floatDecoder) TestData.jsonFloat
+                Json.Decode.decodeString (Json.Decode.list EffectDecoders.floatDecoder) TestData.jsonFloat
                     |> Debug.log "FAIL"
                     |> Expect.ok
         , Test.test "String decoder" <|
             \_ ->
-                Json.Decode.decodeString (Json.Decode.list MyFirstFile.stringDecoder) TestData.jsonString
+                Json.Decode.decodeString (Json.Decode.list EffectDecoders.stringDecoder) TestData.jsonString
                     |> Expect.ok
         , Test.test "Int decoder" <|
             \_ ->
-                Json.Decode.decodeString (Json.Decode.list MyFirstFile.intDecoder) TestData.jsonInt
+                Json.Decode.decodeString (Json.Decode.list EffectDecoders.intDecoder) TestData.jsonInt
                     |> Expect.ok
         , Test.test "Bool decoder" <|
             \_ ->
-                Json.Decode.decodeString (Json.Decode.list MyFirstFile.boolDecoder) TestData.jsonBool
+                Json.Decode.decodeString (Json.Decode.list EffectDecoders.boolDecoder) TestData.jsonBool
                     |> Expect.ok
         , Test.test "List String decoder" <|
             \_ ->
-                Json.Decode.decodeString (Json.Decode.list MyFirstFile.listStringDecoder) TestData.jsonListString
+                Json.Decode.decodeString (Json.Decode.list EffectDecoders.listStringDecoder) TestData.jsonListString
                     |> Expect.ok
         , Test.test "Maybe Int decoder" <|
             \_ ->
-                Json.Decode.decodeString (Json.Decode.list MyFirstFile.maybeIntDecoder) TestData.jsonMaybeInt
+                Json.Decode.decodeString (Json.Decode.list EffectDecoders.maybeIntDecoder) TestData.jsonMaybeInt
                     |> Expect.ok
         , Test.test "Maybe Char decoder" <|
             \_ ->
-                Json.Decode.decodeString (Json.Decode.list MyFirstFile.maybeCharDecoder) TestData.jsonMaybeChar
+                Json.Decode.decodeString (Json.Decode.list EffectDecoders.maybeCharDecoder) TestData.jsonMaybeChar
                     |> Expect.ok
         , Test.test "Result String Int decoder" <|
             \_ ->
-                Json.Decode.decodeString (Json.Decode.list MyFirstFile.resultStringIntDecoder) TestData.jsonResultStringInt
+                Json.Decode.decodeString (Json.Decode.list EffectDecoders.resultStringIntDecoder) TestData.jsonResultStringInt
                     |> Expect.ok
         ]

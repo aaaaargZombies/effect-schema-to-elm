@@ -54,7 +54,7 @@ main =
 
 generate : List AST -> List Elm.File
 generate data =
-    [ Elm.file [ "MyFirstFile" ]
+    [ Elm.file [ "Generated", "EffectDecoders" ]
         (List.map
             astToDeclaration
             data
@@ -449,10 +449,8 @@ decodeResult =
         )
         (Json.Decode.at
             [ "to", "typeParameters" ]
-            (Json.Decode.oneOf
-                [ Json.Decode.lazy (\_ -> Json.Decode.list decodeAST)
-                , decodeNestHelper
-                ]
+            (Json.Decode.lazy
+                (\_ -> Json.Decode.list decodeAST)
             )
         )
         |> Json.Decode.andThen
@@ -468,11 +466,3 @@ decodeResult =
                 else
                     Json.Decode.fail "Not a Result"
             )
-
-
-decodeNestHelper : Json.Decode.Decoder (List AST)
-decodeNestHelper =
-    Json.Decode.lazy
-        (\_ ->
-            Json.Decode.at [ "typeParameters" ] (Json.Decode.list decodeAST)
-        )
