@@ -10,6 +10,13 @@ export const astToName = (ast) => {
   if (name === "List") {
     return name + astToName(ast.rest[0].type);
   }
+  if (name === "Result") {
+    return (
+      name +
+      astToName(ast.to.typeParameters[1]) +
+      astToName(ast.to.typeParameters[0])
+    );
+  }
   return name;
 };
 

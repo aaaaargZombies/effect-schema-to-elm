@@ -12,7 +12,27 @@ import Gen.Json.Decode
 import Gen.String
 import Gen.Tuple
 import Json.Decode
-import Json.Encode
+
+
+
+{-
+   ▄▄▄▄    ▄▄▄▄  ▄    ▄   ▄▄   ▄▄▄▄▄  ▄▄   ▄
+   █   ▀▄ ▄▀  ▀▄ ██  ██   ██     █    █▀▄  █
+   █    █ █    █ █ ██ █  █  █    █    █ █▄ █
+   █    █ █    █ █ ▀▀ █  █▄▄█    █    █  █ █
+   █▄▄▄▀   █▄▄█  █    █ █    █ ▄▄█▄▄  █   ██
+-}
+
+
+type AST
+    = Bool_
+    | Char_
+    | Float_
+    | Int_
+    | String_
+    | List_ AST
+    | Maybe_ AST
+    | Result_ AST AST
 
 
 
@@ -72,25 +92,188 @@ astToName ast =
         Maybe_ a ->
             "Maybe" ++ astToName a
 
+        Result_ err ok ->
+            "Result" ++ astToName err ++ astToName ok
+
 
 
 {-
-   ▄▄▄▄    ▄▄▄▄  ▄    ▄   ▄▄   ▄▄▄▄▄  ▄▄   ▄
-   █   ▀▄ ▄▀  ▀▄ ██  ██   ██     █    █▀▄  █
-   █    █ █    █ █ ██ █  █  █    █    █ █▄ █
-   █    █ █    █ █ ▀▀ █  █▄▄█    █    █  █ █
-   █▄▄▄▀   █▄▄█  █    █ █    █ ▄▄█▄▄  █   ██
+   ▄▄▄▄   ▄▄▄▄▄▄   ▄▄▄   ▄▄▄▄  ▄▄▄▄   ▄▄▄▄▄▄ ▄▄▄▄▄   ▄▄▄▄
+   █   ▀▄ █      ▄▀   ▀ ▄▀  ▀▄ █   ▀▄ █      █   ▀█ █▀   ▀
+   █    █ █▄▄▄▄▄ █      █    █ █    █ █▄▄▄▄▄ █▄▄▄▄▀ ▀█▄▄▄
+   █    █ █      █      █    █ █    █ █      █   ▀▄     ▀█
+   █▄▄▄▀  █▄▄▄▄▄  ▀▄▄▄▀  █▄▄█  █▄▄▄▀  █▄▄▄▄▄ █    ▀ ▀▄▄▄█▀
 -}
 
 
-type AST
-    = Bool_
-    | Char_
-    | Float_
-    | Int_
-    | String_
-    | List_ AST
-    | Maybe_ AST
+astToDecoder : AST -> Elm.Expression
+astToDecoder ast =
+    case ast of
+        Bool_ ->
+            Gen.Json.Decode.bool
+
+        Char_ ->
+            Gen.Json.Decode.string
+                |> Gen.Json.Decode.andThen
+                    (\string ->
+                        Elm.Case.custom
+                            (Gen.String.call_.uncons string)
+                            (Type.maybe (Type.tuple Type.char Type.string))
+                            [ Elm.Case.branch
+                                (Elm.Arg.customType "Nothing" ())
+                                (\_ ->
+                                    Gen.Json.Decode.fail "Not a Char"
+                                )
+                            , Elm.Case.branch
+                                (Elm.Arg.item
+                                    (Elm.Arg.tuple (Elm.Arg.varWith "char" Type.char) (Elm.Arg.string ""))
+                                    (Elm.Arg.customType "Just" Tuple.first)
+                                )
+                                Gen.Json.Decode.succeed
+                            , Elm.Case.branch
+                                Elm.Arg.ignore
+                                (\_ ->
+                                    Gen.Json.Decode.fail "Not a Char"
+                                )
+                            ]
+                    )
+
+        Float_ ->
+            Gen.Json.Decode.float
+
+        Int_ ->
+            Gen.Json.Decode.int
+
+        List_ ast_ ->
+            Gen.Json.Decode.list (astToDecoder ast_)
+
+        Maybe_ ast_ ->
+            Gen.Json.Decode.oneOf
+                [ Gen.Json.Decode.map2 Elm.tuple
+                    (Gen.Json.Decode.field "_tag" Gen.Json.Decode.string)
+                    (Gen.Json.Decode.field "value" (astToDecoder ast_))
+                    |> Gen.Json.Decode.andThen
+                        (\tuple ->
+                            Elm.ifThen
+                                (Elm.Op.equal (Gen.Tuple.first tuple) (Elm.string "Some"))
+                                (Gen.Json.Decode.succeed (Elm.just (Gen.Tuple.second tuple)))
+                                (Gen.Json.Decode.fail "Not a Just")
+                        )
+                , Gen.Json.Decode.andThen
+                    (\tag ->
+                        Elm.ifThen
+                            (Elm.Op.equal tag (Elm.string "None"))
+                            (Gen.Json.Decode.succeed Elm.nothing)
+                            (Gen.Json.Decode.fail "Not a Nothing")
+                    )
+                    (Gen.Json.Decode.field "_tag" Gen.Json.Decode.string)
+                ]
+
+        -- {"_id":"Either","_tag":"Right","right":15}
+        -- {"_id":"Either","_tag":"Left","left":"E7Oz~WOYEM"}
+        Result_ err ok ->
+            Gen.Json.Decode.oneOf
+                [ Gen.Json.Decode.map2 Elm.tuple
+                    (Gen.Json.Decode.field "_tag" Gen.Json.Decode.string)
+                    (Gen.Json.Decode.field "right" (astToDecoder ok))
+                    |> Gen.Json.Decode.andThen
+                        (\tuple ->
+                            Elm.ifThen
+                                (Elm.Op.equal (Gen.Tuple.first tuple) (Elm.string "Right"))
+                                (Gen.Json.Decode.succeed
+                                    (Elm.apply
+                                        (Elm.value
+                                            { importFrom = [ "Result" ]
+                                            , name = "Ok"
+                                            , annotation =
+                                                Just
+                                                    (Type.namedWith
+                                                        []
+                                                        "Result"
+                                                        [ Type.var "error", Type.var "value" ]
+                                                    )
+                                            }
+                                        )
+                                        [ Gen.Tuple.second tuple ]
+                                    )
+                                )
+                                (Gen.Json.Decode.fail "Not a Ok")
+                        )
+                , Gen.Json.Decode.map2 Elm.tuple
+                    (Gen.Json.Decode.field "_tag" Gen.Json.Decode.string)
+                    (Gen.Json.Decode.field "left" (astToDecoder err))
+                    |> Gen.Json.Decode.andThen
+                        (\tuple ->
+                            Elm.ifThen
+                                (Elm.Op.equal (Gen.Tuple.first tuple) (Elm.string "Left"))
+                                (Gen.Json.Decode.succeed
+                                    (Elm.apply
+                                        (Elm.value
+                                            { importFrom = [ "Result" ]
+                                            , name = "Err"
+                                            , annotation =
+                                                Just
+                                                    (Type.namedWith
+                                                        []
+                                                        "Result"
+                                                        [ Type.var "error", Type.var "value" ]
+                                                    )
+                                            }
+                                        )
+                                        [ Gen.Tuple.second tuple ]
+                                    )
+                                )
+                                (Gen.Json.Decode.fail "Not a Err")
+                        )
+                ]
+
+        String_ ->
+            Gen.Json.Decode.string
+
+
+
+{-
+   ▄▄▄▄▄▄ ▄▄   ▄   ▄▄▄   ▄▄▄▄  ▄▄▄▄   ▄▄▄▄▄▄ ▄▄▄▄▄   ▄▄▄▄
+   █      █▀▄  █ ▄▀   ▀ ▄▀  ▀▄ █   ▀▄ █      █   ▀█ █▀   ▀
+   █▄▄▄▄▄ █ █▄ █ █      █    █ █    █ █▄▄▄▄▄ █▄▄▄▄▀ ▀█▄▄▄
+   █      █  █ █ █      █    █ █    █ █      █   ▀▄     ▀█
+   █▄▄▄▄▄ █   ██  ▀▄▄▄▀  █▄▄█  █▄▄▄▀  █▄▄▄▄▄ █    ▀ ▀▄▄▄█▀
+-}
+{-
+     ▄▄   ▄▄   ▄ ▄▄   ▄  ▄▄▄▄ ▄▄▄▄▄▄▄   ▄▄  ▄▄▄▄▄▄▄ ▄▄▄▄▄   ▄▄▄▄  ▄▄   ▄  ▄▄▄▄
+     ██   █▀▄  █ █▀▄  █ ▄▀  ▀▄   █      ██     █      █    ▄▀  ▀▄ █▀▄  █ █▀   ▀
+    █  █  █ █▄ █ █ █▄ █ █    █   █     █  █    █      █    █    █ █ █▄ █ ▀█▄▄▄
+    █▄▄█  █  █ █ █  █ █ █    █   █     █▄▄█    █      █    █    █ █  █ █     ▀█
+   █    █ █   ██ █   ██  █▄▄█    █    █    █   █    ▄▄█▄▄   █▄▄█  █   ██ ▀▄▄▄█▀
+-}
+
+
+astToAnnotation : AST -> Type.Annotation
+astToAnnotation ast =
+    case ast of
+        Bool_ ->
+            Type.bool
+
+        Char_ ->
+            Type.char
+
+        Float_ ->
+            Type.float
+
+        Int_ ->
+            Type.int
+
+        String_ ->
+            Type.string
+
+        List_ a ->
+            Type.list <| astToAnnotation a
+
+        Maybe_ a ->
+            Type.maybe <| astToAnnotation a
+
+        Result_ err ok ->
+            Type.result (astToAnnotation err) (astToAnnotation ok)
 
 
 
@@ -101,23 +284,7 @@ type AST
      █    █  █ █ █    █ █          ▀█   █
    ▄▄█▄▄  █   ██  ▀▄▄▄▀ █▄▄▄▄▄ ▀▄▄▄█▀   █
 -}
-
-
-type alias EffectData =
-    { ast : AST
-    , name : String
-    }
-
-
-
 {- Basics -}
-
-
-decodeEffectData : Json.Decode.Decoder EffectData
-decodeEffectData =
-    Json.Decode.map2 EffectData
-        (Json.Decode.field "ast" decodeAST)
-        (Json.Decode.field "name" Json.Decode.string)
 
 
 decodeAST : Json.Decode.Decoder AST
@@ -133,6 +300,7 @@ decodeAST =
         -- Containers
         , decodeMaybe
         , decodeList
+        , decodeResult
         ]
 
 
@@ -272,120 +440,27 @@ decodeList =
             )
 
 
+decodeResult : Json.Decode.Decoder AST
+decodeResult =
+    Json.Decode.map2 Tuple.pair
+        (Json.Decode.at
+            [ "annotations", "Symbol(ElmType)" ]
+            Json.Decode.string
+        )
+        (Json.Decode.at
+            [ "to", "typeParameters" ]
+            (Json.Decode.lazy (\_ -> Json.Decode.list decodeAST))
+        )
+        |> Json.Decode.andThen
+            (\( elmType, asts ) ->
+                if elmType == "Result" then
+                    case asts of
+                        [ value, error ] ->
+                            Json.Decode.succeed <| Result_ error value
 
-{-
-   ▄▄▄▄   ▄▄▄▄▄▄   ▄▄▄   ▄▄▄▄  ▄▄▄▄   ▄▄▄▄▄▄ ▄▄▄▄▄   ▄▄▄▄
-   █   ▀▄ █      ▄▀   ▀ ▄▀  ▀▄ █   ▀▄ █      █   ▀█ █▀   ▀
-   █    █ █▄▄▄▄▄ █      █    █ █    █ █▄▄▄▄▄ █▄▄▄▄▀ ▀█▄▄▄
-   █    █ █      █      █    █ █    █ █      █   ▀▄     ▀█
-   █▄▄▄▀  █▄▄▄▄▄  ▀▄▄▄▀  █▄▄█  █▄▄▄▀  █▄▄▄▄▄ █    ▀ ▀▄▄▄█▀
--}
+                        _ ->
+                            Json.Decode.fail "Failed to decode type param"
 
-
-astToDecoder : AST -> Elm.Expression
-astToDecoder ast =
-    case ast of
-        Bool_ ->
-            Gen.Json.Decode.bool
-
-        Char_ ->
-            Gen.Json.Decode.string
-                |> Gen.Json.Decode.andThen
-                    (\string ->
-                        Elm.Case.custom
-                            (Gen.String.call_.uncons string)
-                            (Type.maybe (Type.tuple Type.char Type.string))
-                            [ Elm.Case.branch
-                                (Elm.Arg.customType "Nothing" ())
-                                (\_ ->
-                                    Gen.Json.Decode.fail "Not a Char"
-                                )
-                            , Elm.Case.branch
-                                (Elm.Arg.item
-                                    (Elm.Arg.tuple (Elm.Arg.varWith "char" Type.char) (Elm.Arg.string ""))
-                                    (Elm.Arg.customType "Just" (\( c, s ) -> c))
-                                )
-                                Gen.Json.Decode.succeed
-                            , Elm.Case.branch
-                                Elm.Arg.ignore
-                                (\_ ->
-                                    Gen.Json.Decode.fail "Not a Char"
-                                )
-                            ]
-                    )
-
-        Float_ ->
-            Gen.Json.Decode.float
-
-        Int_ ->
-            Gen.Json.Decode.int
-
-        List_ ast_ ->
-            Gen.Json.Decode.list (astToDecoder ast_)
-
-        Maybe_ ast_ ->
-            Gen.Json.Decode.oneOf
-                [ Gen.Json.Decode.map2 Elm.tuple
-                    (Gen.Json.Decode.field "_tag" Gen.Json.Decode.string)
-                    (Gen.Json.Decode.field "value" (astToDecoder ast_))
-                    |> Gen.Json.Decode.andThen
-                        (\tuple ->
-                            Elm.ifThen
-                                (Elm.Op.equal (Gen.Tuple.first tuple) (Elm.string "Some"))
-                                (Gen.Json.Decode.succeed (Elm.just (Gen.Tuple.second tuple)))
-                                (Gen.Json.Decode.fail "Not a Just")
-                        )
-                , Gen.Json.Decode.andThen
-                    (\tag ->
-                        Elm.ifThen
-                            (Elm.Op.equal tag (Elm.string "None"))
-                            (Gen.Json.Decode.succeed Elm.nothing)
-                            (Gen.Json.Decode.fail "Not a Nothing")
-                    )
-                    (Gen.Json.Decode.field "_tag" Gen.Json.Decode.string)
-                ]
-
-        String_ ->
-            Gen.Json.Decode.string
-
-
-
-{-
-   ▄▄▄▄▄▄ ▄▄   ▄   ▄▄▄   ▄▄▄▄  ▄▄▄▄   ▄▄▄▄▄▄ ▄▄▄▄▄   ▄▄▄▄
-   █      █▀▄  █ ▄▀   ▀ ▄▀  ▀▄ █   ▀▄ █      █   ▀█ █▀   ▀
-   █▄▄▄▄▄ █ █▄ █ █      █    █ █    █ █▄▄▄▄▄ █▄▄▄▄▀ ▀█▄▄▄
-   █      █  █ █ █      █    █ █    █ █      █   ▀▄     ▀█
-   █▄▄▄▄▄ █   ██  ▀▄▄▄▀  █▄▄█  █▄▄▄▀  █▄▄▄▄▄ █    ▀ ▀▄▄▄█▀
--}
-{-
-     ▄▄   ▄▄   ▄ ▄▄   ▄  ▄▄▄▄ ▄▄▄▄▄▄▄   ▄▄  ▄▄▄▄▄▄▄ ▄▄▄▄▄   ▄▄▄▄  ▄▄   ▄  ▄▄▄▄
-     ██   █▀▄  █ █▀▄  █ ▄▀  ▀▄   █      ██     █      █    ▄▀  ▀▄ █▀▄  █ █▀   ▀
-    █  █  █ █▄ █ █ █▄ █ █    █   █     █  █    █      █    █    █ █ █▄ █ ▀█▄▄▄
-    █▄▄█  █  █ █ █  █ █ █    █   █     █▄▄█    █      █    █    █ █  █ █     ▀█
-   █    █ █   ██ █   ██  █▄▄█    █    █    █   █    ▄▄█▄▄   █▄▄█  █   ██ ▀▄▄▄█▀
--}
-
-
-astToAnnotation : AST -> Type.Annotation
-astToAnnotation ast =
-    case ast of
-        Bool_ ->
-            Type.bool
-
-        Char_ ->
-            Type.char
-
-        Float_ ->
-            Type.float
-
-        Int_ ->
-            Type.int
-
-        String_ ->
-            Type.string
-
-        List_ a ->
-            Type.list <| astToAnnotation a
-
-        Maybe_ a ->
-            Type.maybe <| astToAnnotation a
+                else
+                    Json.Decode.fail "Not a Result"
+            )

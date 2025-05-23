@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { pipe, Schema } from "effect";
 
 const ElmType = Symbol.for("ElmType");
 
@@ -95,9 +95,14 @@ export const Record = (arg: { [key: string]: Schema.Schema.Any }) =>
 
 // Result
 export const Result = (args: {
-  left: Schema.Schema.Any;
-  right: Schema.Schema.Any;
-}) => Schema.Either(args);
+  error: Schema.Schema.Any;
+  value: Schema.Schema.Any;
+}) =>
+  Schema.Either({ left: args.error, right: args.value }).pipe(
+    Schema.annotations({
+      [ElmType]: "Result",
+    }),
+  );
 
 // Set
 export const Set_ = (a: Schema.Schema.Any) => Schema.Set(a);
@@ -143,3 +148,12 @@ export const Alias = (name: string, type: Schema.Schema.Any) =>
 // Platform.Sub
 // Process
 // Task
+
+// pipe(
+//   Result({
+//     error: String,
+//     value: Int,
+//   }).ast,
+//   JSON.stringify,
+//   console.log,
+// );
