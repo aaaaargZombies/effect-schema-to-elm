@@ -17,6 +17,16 @@ export const astToName = (ast) => {
       astToName(ast.to.typeParameters[0])
     );
   }
+  if (name === "Result") {
+    return (
+      name +
+      astToName(ast.to.typeParameters[1]) +
+      astToName(ast.to.typeParameters[0])
+    );
+  }
+  if (ast._tag === "Declaration") {
+    return ast.typeParameters.map(astToName).join("");
+  }
   return name;
 };
 
