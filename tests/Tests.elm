@@ -47,4 +47,12 @@ suite =
             \_ ->
                 Json.Decode.decodeString (Json.Decode.list EffectDecoders.resultStringIntDecoder) TestData.jsonResultStringInt
                     |> Expect.ok
+        , Test.test "Result String (Maybe (List String))" <|
+            \_ ->
+                Json.Decode.decodeString (Json.Decode.list EffectDecoders.resultStringMaybeListStringDecoder) TestData.jsonResultStringListString
+                    |> Expect.ok
+        , Test.test "Result String (Result String (Maybe (List String)))" <|
+            \_ ->
+                Json.Decode.decodeString (Json.Decode.list EffectDecoders.resultStringResultStringMaybeListStringDecoder) TestData.jsonResultStringListStringString
+                    |> Expect.ok
         ]

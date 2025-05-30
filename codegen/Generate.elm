@@ -299,8 +299,10 @@ decodeAST =
 
         -- Containers
         , decodeMaybe
+        , decodeMaybeDecleration
         , decodeList
         , decodeResult
+        , decodeResultDecleration
         ]
 
 
@@ -414,6 +416,32 @@ decodeMaybe =
             )
 
 
+decodeMaybeDecleration : Json.Decode.Decoder AST
+decodeMaybeDecleration =
+    Json.Decode.map2 Tuple.pair
+        (Json.Decode.at
+            [ "annotations", "Symbol(effect/annotation/Description)" ]
+            Json.Decode.string
+        )
+        (Json.Decode.at
+            [ "typeParameters" ]
+            (Json.Decode.lazy (\_ -> Json.Decode.list decodeAST))
+        )
+        |> Json.Decode.andThen
+            (\( description, asts ) ->
+                if String.startsWith "Option" description then
+                    case asts of
+                        [ ast ] ->
+                            Json.Decode.succeed <| Maybe_ ast
+
+                        _ ->
+                            Json.Decode.fail "Failed to decode type param"
+
+                else
+                    Json.Decode.fail "Not a Maybe"
+            )
+
+
 decodeList : Json.Decode.Decoder AST
 decodeList =
     Json.Decode.map2 Tuple.pair
@@ -456,6 +484,34 @@ decodeResult =
         |> Json.Decode.andThen
             (\( elmType, asts ) ->
                 if elmType == "Result" then
+                    case asts of
+                        [ value, error ] ->
+                            Json.Decode.succeed <| Result_ error value
+
+                        _ ->
+                            Json.Decode.fail "Failed to decode type param"
+
+                else
+                    Json.Decode.fail "Not a Result"
+            )
+
+
+decodeResultDecleration : Json.Decode.Decoder AST
+decodeResultDecleration =
+    Json.Decode.map2 Tuple.pair
+        (Json.Decode.at
+            [ "annotations", "Symbol(effect/annotation/Description)" ]
+            Json.Decode.string
+        )
+        (Json.Decode.at
+            [ "typeParameters" ]
+            (Json.Decode.lazy
+                (\_ -> Json.Decode.list decodeAST)
+            )
+        )
+        |> Json.Decode.andThen
+            (\( description, asts ) ->
+                if String.startsWith "Either" description then
                     case asts of
                         [ value, error ] ->
                             Json.Decode.succeed <| Result_ error value
