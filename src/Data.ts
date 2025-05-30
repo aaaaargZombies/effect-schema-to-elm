@@ -12,9 +12,9 @@ export const Char = Schema.String.pipe(
   Schema.length(1),
   Schema.annotations({
     [ElmType]: "Char",
-    title: "ElmChar",
+    // title: "ElmChar",
     jsonSchema: {
-      title: "ElmChar",
+      // title: "ElmChar",
     },
   }),
 );
@@ -97,25 +97,34 @@ export const Record = (arg: { [key: string]: Schema.Schema.Any }) =>
 export const Result = (args: {
   error: Schema.Schema.Any;
   value: Schema.Schema.Any;
-}) => Schema.Either({ left: args.error, right: args.value });
-// Schema.Either({ left: args.error, right: args.value }).pipe(
-//   Schema.annotations({
-//     [ElmType]: "Result",
-//   }),
-// );
+}) =>
+  Schema.Either({ left: args.error, right: args.value }).pipe(
+    Schema.annotations({
+      [ElmType]: "Result",
+    }),
+  );
 
 // Set
 export const Set_ = (a: Schema.Schema.Any) => Schema.Set(a);
 
 // Tuple
 export const Tuple2 = (a: Schema.Schema.Any, b: Schema.Schema.Any) =>
-  Schema.Tuple(a, b);
+  Schema.Tuple(a, b).pipe(
+    Schema.annotations({
+      [ElmType]: "Tuple2",
+    }),
+  );
 export const Tuple2vals = Tuple2(String, Int);
 export const Tuple3 = (
   a: Schema.Schema.Any,
   b: Schema.Schema.Any,
   c: Schema.Schema.Any,
-) => Schema.Tuple(a, b, c);
+) =>
+  Schema.Tuple(a, b, c).pipe(
+    Schema.annotations({
+      [ElmType]: "Tuple3",
+    }),
+  );
 export const Tuple3vals = Tuple3(String, Int, String);
 
 // Unit
@@ -157,3 +166,14 @@ export const Alias = (name: string, type: Schema.Schema.Any) =>
 //   JSON.stringify,
 //   console.log,
 // );
+
+export const custom = Schema.Union(
+  Schema.Struct({ _tag: Schema.String }),
+  Schema.Struct({ _tag: Schema.String, value: Schema.Boolean }),
+);
+
+export const custom_ = (value: Schema.Schema.Any) =>
+  Schema.Union(
+    Schema.Struct({ _tag: Schema.Literal("One") }),
+    Schema.Struct({ _tag: Schema.Literal("Two"), value: value }),
+  );
