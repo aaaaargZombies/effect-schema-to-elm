@@ -2,6 +2,27 @@ import { pipe, Schema } from "effect";
 
 const ElmType = Symbol.for("ElmType");
 
+type Comparable = typeof Char | typeof String | typeof Int | typeof Float;
+
+// wanted to give these as params to things like Maybe but it seems to break!?
+// type ElmType_ =
+//   | typeof Char
+//   | typeof String
+//   | typeof Int
+//   | typeof Float
+//   | typeof Bool
+//   | typeof Array
+//   | typeof Dict
+//   | typeof List
+//   | typeof Record
+//   | typeof Result
+//   | typeof Set_
+//   | typeof Tuple2
+//   | typeof Tuple3
+//   | MaybeSchema;
+
+// type MaybeSchema = ReturnType<typeof Maybe>;
+
 /// Make some schemes as see how they map to
 /// Elm Data types
 //
@@ -49,8 +70,6 @@ export const Bool = Schema.Boolean.pipe(
   }),
 );
 
-type Comparable = typeof Char | typeof String | typeof Int | typeof Float;
-
 /// Containers
 // Array
 export const Array = (s: Schema.Schema.Any) =>
@@ -89,9 +108,16 @@ export const Maybe = (s: Schema.Schema.Any) =>
     }),
   );
 
-// Record
-export const Record = (arg: { [key: string]: Schema.Schema.Any }) =>
-  Schema.Struct(arg);
+// ideall narrow the type on the key
+// this type at the moment is kinda meaningless
+export const Record = <T extends { [key: string]: Schema.Schema.Any }>(
+  arg: T,
+) =>
+  Schema.Struct(arg).pipe(
+    Schema.annotations({
+      [ElmType]: "Record",
+    }),
+  );
 
 // Result
 export const Result = (args: {

@@ -55,4 +55,8 @@ suite =
             \_ ->
                 Json.Decode.decodeString (Json.Decode.list EffectDecoders.resultStringResultStringMaybeListStringDecoder) TestData.jsonResultStringListStringString
                     |> Expect.ok
+        , Test.test "Record { one : Char, two : String }" <| 
+            \_ -> 
+                Json.Decode.decodeString (Json.Decode.list EffectDecoders.recordoneChartwoStringDecoder) TestData.jsonRecord
+                    |> Expect.ok
         ]

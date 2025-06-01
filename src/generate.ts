@@ -22,6 +22,10 @@ const dataTypes = [
       value: ElmData.Maybe(ElmData.List(ElmData.String)),
     }),
   }),
+  ElmData.Record({
+    one: ElmData.Char,
+    two: ElmData.String,
+  }),
 ].map((s) => JSON.parse(JSON.stringify(s.ast)));
 
 CodeGen.run("Generate.elm", {

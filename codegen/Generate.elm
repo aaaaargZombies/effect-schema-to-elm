@@ -2,6 +2,7 @@ module Generate exposing (main)
 
 {-| -}
 
+import Dict exposing (Dict)
 import Elm
 import Elm.Annotation as Type
 import Elm.Arg
@@ -33,6 +34,7 @@ type AST
     | List_ AST
     | Maybe_ AST
     | Result_ AST AST
+    | Record_ (Dict String AST)
 
 
 
@@ -94,6 +96,14 @@ astToName ast =
 
         Result_ err ok ->
             "Result" ++ astToName err ++ astToName ok
+
+        Record_ dict ->
+            "Record"
+                ++ (dict
+                        |> Dict.toList
+                        |> List.map (\( name, type_ ) -> name ++ astToName type_)
+                        |> String.join ""
+                   )
 
 
 
@@ -169,8 +179,28 @@ astToDecoder ast =
                     (Gen.Json.Decode.field "_tag" Gen.Json.Decode.string)
                 ]
 
-        -- {"_id":"Either","_tag":"Right","right":15}
-        -- {"_id":"Either","_tag":"Left","left":"E7Oz~WOYEM"}
+        -- { "one": "0", "two": "K6" },
+        -- { "one": "^", "two": "vCr" }
+        Record_ dict ->
+            case Dict.toList dict of
+                [ ( a, aAST ), ( b, bAST ) ] ->
+                    Gen.Json.Decode.map2 (\aVal bVal -> Elm.record [ ( a, aVal ), ( b, bVal ) ])
+                        (Gen.Json.Decode.field a (astToDecoder aAST))
+                        (Gen.Json.Decode.field b (astToDecoder bAST))
+
+                [ ( a, aAST ) ] ->
+                    Gen.Json.Decode.map (\val -> Elm.record [ ( a, val ) ])
+                        (Gen.Json.Decode.field a (astToDecoder aAST))
+
+                _ ->
+                    Gen.Json.Decode.fail "No decoder provided for a record with this many elements"
+
+        -- https://package.elm-lang.org/packages/mdgriffith/elm-codegen/latest/Elm#record
+        -- normally you would
+        -- Json.Decode.map2 (\a b -> {one = a, two = b})
+        --    Json.Decode.at "one" Json.Decode.string
+        --    Json.Decode.at "two" Json.Decode.string
+        -- but I have an unknow mapN
         Result_ err ok ->
             Gen.Json.Decode.oneOf
                 [ Gen.Json.Decode.map2 Elm.tuple
@@ -275,6 +305,10 @@ astToAnnotation ast =
         Result_ err ok ->
             Type.result (astToAnnotation err) (astToAnnotation ok)
 
+        Record_ dict ->
+            Type.record
+                (dict |> Dict.toList |> List.map (Tuple.mapSecond astToAnnotation))
+
 
 
 {-
@@ -303,6 +337,7 @@ decodeAST =
         , decodeList
         , decodeResult
         , decodeResultDecleration
+        , decodeRecord
         ]
 
 
@@ -521,4 +556,29 @@ decodeResultDecleration =
 
                 else
                     Json.Decode.fail "Not a Result"
+            )
+
+
+decodeRecord : Json.Decode.Decoder AST
+decodeRecord =
+    Json.Decode.map2 Tuple.pair
+        (Json.Decode.at
+            [ "annotations", "Symbol(ElmType)" ]
+            Json.Decode.string
+        )
+        (Json.Decode.at [ "propertySignatures" ]
+            (Json.Decode.list
+                (Json.Decode.map2 Tuple.pair
+                    (Json.Decode.at [ "name" ] Json.Decode.string)
+                    (Json.Decode.at [ "type" ] (Json.Decode.lazy (\_ -> decodeAST)))
+                )
+            )
+        )
+        |> Json.Decode.andThen
+            (\( elmType, content ) ->
+                if elmType == "Record" then
+                    Json.Decode.succeed <| Record_ (Dict.fromList content)
+
+                else
+                    Json.Decode.fail "Not a Record"
             )

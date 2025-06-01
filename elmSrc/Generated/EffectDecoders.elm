@@ -335,3 +335,28 @@ resultStringResultStringMaybeListStringDecoder =
                (Json.Decode.field "left" Json.Decode.string)
             )
         ]
+
+
+recordoneChartwoStringDecoder :
+    Json.Decode.Decoder { one : Char.Char, two : String }
+recordoneChartwoStringDecoder =
+    Json.Decode.map2
+        (\map2Unpack -> \unpack -> { one = map2Unpack, two = unpack })
+        (Json.Decode.field
+             "one"
+             (Json.Decode.andThen
+                  (\andThenUnpack ->
+                       case String.uncons andThenUnpack of
+                           Nothing ->
+                               Json.Decode.fail "Not a Char"
+
+                           Just ( char, "" ) ->
+                               Json.Decode.succeed char
+
+                           _ ->
+                               Json.Decode.fail "Not a Char"
+                  )
+                  Json.Decode.string
+             )
+        )
+        (Json.Decode.field "two" Json.Decode.string)

@@ -24,6 +24,10 @@ const testData = [
       value: Data.Maybe(Data.List(Data.String)),
     }),
   }),
+  Data.Record({
+    one: Data.Char,
+    two: Data.String,
+  }),
 ].map((s) => {
   const ast = JSON.parse(JSON.stringify(s.ast));
   const name: string = Utils.astToName(ast);
