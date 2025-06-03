@@ -10,6 +10,7 @@ import Elm.Case
 import Elm.Op
 import Gen.CodeGen.Generate as Generate
 import Gen.Json.Decode
+import Gen.Json.Decode.Extra
 import Gen.String
 import Gen.Tuple
 import Json.Decode
@@ -101,7 +102,11 @@ astToName ast =
             "Record"
                 ++ (dict
                         |> Dict.toList
-                        |> List.map (\( name, type_ ) -> name ++ astToName type_)
+                        |> List.map
+                            (\( name, type_ ) ->
+                                capitalize name
+                                    ++ astToName type_
+                            )
                         |> String.join ""
                    )
 
@@ -189,79 +194,29 @@ astToDecoder ast =
         --    Json.Decode.at "two" Json.Decode.string
         -- but I have an unknow mapN
         Record_ dict ->
-            case Dict.toList dict of
-                [ ( a, aAST ), ( b, bAST ), ( c, cAST ), ( d, dAST ), ( e, eAST ), ( f, fAST ), ( g, gAST ) ] ->
-                    Gen.Json.Decode.map7
-                        (\aVal bVal cVal dVal eVal fVal gVal ->
+            let
+                listOf =
+                    Dict.toList dict
+            in
+            List.foldl
+                (\( name, ast_ ) expression ->
+                    -- need to apply this (map2 (|>))
+                    Gen.Json.Decode.Extra.andMap (Gen.Json.Decode.field name (astToDecoder ast_)) expression
+                )
+                (Gen.Json.Decode.succeed
+                    (Elm.function
+                        (List.map (\( name, _ ) -> ( name, Nothing )) listOf)
+                        (\args ->
                             Elm.record
-                                [ ( a, aVal )
-                                , ( b, bVal )
-                                , ( c, cVal )
-                                , ( d, dVal )
-                                , ( e, eVal )
-                                , ( f, fVal )
-                                , ( g, gVal )
-                                ]
+                                (List.map2
+                                    (\( name, _ ) arg -> ( name, arg ))
+                                    listOf
+                                    args
+                                )
                         )
-                        (Gen.Json.Decode.field a (astToDecoder aAST))
-                        (Gen.Json.Decode.field b (astToDecoder bAST))
-                        (Gen.Json.Decode.field c (astToDecoder cAST))
-                        (Gen.Json.Decode.field d (astToDecoder dAST))
-                        (Gen.Json.Decode.field e (astToDecoder eAST))
-                        (Gen.Json.Decode.field f (astToDecoder fAST))
-                        (Gen.Json.Decode.field g (astToDecoder gAST))
-
-                [ ( a, aAST ), ( b, bAST ), ( c, cAST ), ( d, dAST ), ( e, eAST ), ( f, fAST ) ] ->
-                    Gen.Json.Decode.map6
-                        (\aVal bVal cVal dVal eVal fVal ->
-                            Elm.record
-                                [ ( a, aVal )
-                                , ( b, bVal )
-                                , ( c, cVal )
-                                , ( d, dVal )
-                                , ( e, eVal )
-                                , ( f, fVal )
-                                ]
-                        )
-                        (Gen.Json.Decode.field a (astToDecoder aAST))
-                        (Gen.Json.Decode.field b (astToDecoder bAST))
-                        (Gen.Json.Decode.field c (astToDecoder cAST))
-                        (Gen.Json.Decode.field d (astToDecoder dAST))
-                        (Gen.Json.Decode.field e (astToDecoder eAST))
-                        (Gen.Json.Decode.field f (astToDecoder fAST))
-
-                [ ( a, aAST ), ( b, bAST ), ( c, cAST ), ( d, dAST ), ( e, eAST ) ] ->
-                    Gen.Json.Decode.map5 (\aVal bVal cVal dVal eVal -> Elm.record [ ( a, aVal ), ( b, bVal ), ( c, cVal ), ( d, dVal ), ( e, eVal ) ])
-                        (Gen.Json.Decode.field a (astToDecoder aAST))
-                        (Gen.Json.Decode.field b (astToDecoder bAST))
-                        (Gen.Json.Decode.field c (astToDecoder cAST))
-                        (Gen.Json.Decode.field d (astToDecoder dAST))
-                        (Gen.Json.Decode.field e (astToDecoder eAST))
-
-                [ ( a, aAST ), ( b, bAST ), ( c, cAST ), ( d, dAST ) ] ->
-                    Gen.Json.Decode.map4 (\aVal bVal cVal dVal -> Elm.record [ ( a, aVal ), ( b, bVal ), ( c, cVal ), ( d, dVal ) ])
-                        (Gen.Json.Decode.field a (astToDecoder aAST))
-                        (Gen.Json.Decode.field b (astToDecoder bAST))
-                        (Gen.Json.Decode.field c (astToDecoder cAST))
-                        (Gen.Json.Decode.field d (astToDecoder dAST))
-
-                [ ( a, aAST ), ( b, bAST ), ( c, cAST ) ] ->
-                    Gen.Json.Decode.map3 (\aVal bVal cVal -> Elm.record [ ( a, aVal ), ( b, bVal ), ( c, cVal ) ])
-                        (Gen.Json.Decode.field a (astToDecoder aAST))
-                        (Gen.Json.Decode.field b (astToDecoder bAST))
-                        (Gen.Json.Decode.field c (astToDecoder cAST))
-
-                [ ( a, aAST ), ( b, bAST ) ] ->
-                    Gen.Json.Decode.map2 (\aVal bVal -> Elm.record [ ( a, aVal ), ( b, bVal ) ])
-                        (Gen.Json.Decode.field a (astToDecoder aAST))
-                        (Gen.Json.Decode.field b (astToDecoder bAST))
-
-                [ ( a, aAST ) ] ->
-                    Gen.Json.Decode.map (\val -> Elm.record [ ( a, val ) ])
-                        (Gen.Json.Decode.field a (astToDecoder aAST))
-
-                _ ->
-                    Gen.Json.Decode.fail "No decoder provided for a record with this many elements"
+                    )
+                )
+                listOf
 
         Result_ err ok ->
             Gen.Json.Decode.oneOf
@@ -644,3 +599,21 @@ decodeRecord =
                 else
                     Json.Decode.fail "Not a Record"
             )
+
+
+
+{-
+   █    █ █      █      █   ▀█ █      █   ▀█ █▀   ▀
+   █▄▄▄▄█ █▄▄▄▄▄ █      █▄▄▄█▀ █▄▄▄▄▄ █▄▄▄▄▀ ▀█▄▄▄
+   █    █ █      █      █      █      █   ▀▄     ▀█
+   █    █ █▄▄▄▄▄ █▄▄▄▄▄ █      █▄▄▄▄▄ █    ▀ ▀▄▄▄█▀
+-}
+
+
+capitalize : String -> String
+capitalize s =
+    s
+        |> String.uncons
+        |> Maybe.map (Tuple.mapFirst Char.toUpper)
+        |> Maybe.map (\( a, b ) -> String.cons a b)
+        |> Maybe.withDefault s

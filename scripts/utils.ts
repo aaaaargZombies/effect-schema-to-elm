@@ -2,6 +2,8 @@ import { Arbitrary, FastCheck, Schema } from "effect";
 
 export const pojo = (a) => JSON.parse(JSON.stringify(a));
 
+const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+
 export const astToName = (ast) => {
   const name: string = ast.annotations["Symbol(ElmType)"];
   if (name === "Maybe") {
@@ -17,13 +19,29 @@ export const astToName = (ast) => {
       astToName(ast.to.typeParameters[0])
     );
   }
-  if (name === "Result") {
+  if (name === "Record") {
+    // console.log(name);
     return (
       name +
-      astToName(ast.to.typeParameters[1]) +
-      astToName(ast.to.typeParameters[0])
+      ast.propertySignatures
+        .map((signature) => {
+          return capitalize(signature.name) + astToName(signature.type);
+        })
+        .join("")
     );
   }
+  // if (name === "Record") {
+  //   console.log(name);
+  //   return (
+  //     name +
+  //     ast.propertySignatures
+  //       .map(({ name, type_ }) => {
+  //         console.log(type_);
+  //         return capitalize(name) + astToName(type_);
+  //       })
+  //       .join("")
+  //   );
+  // }
   if (ast._tag === "Declaration") {
     return ast.typeParameters.map(astToName).join("");
   }

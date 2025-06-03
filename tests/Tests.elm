@@ -59,6 +59,14 @@ suite =
                     |> Expect.ok
         , Test.test "Record { one : Char, two : String }" <| 
             \_ -> 
-                Json.Decode.decodeString (Json.Decode.list EffectDecoders.recordoneChartwoStringDecoder) TestData.jsonRecord
+                Json.Decode.decodeString (Json.Decode.list EffectDecoders.recordOneCharTwoStringDecoder) TestData.jsonRecordOneCharTwoString
+                    |> Expect.ok
+        , Test.test "Record 10 fields" <| 
+            \_ -> 
+                Json.Decode.decodeString (Json.Decode.list EffectDecoders.recordACharBCharCCharDCharECharFCharGCharHCharICharJCharDecoder) TestData.jsonRecordACharBCharCCharDCharECharFCharGCharHCharICharJChar
+                    |> Expect.ok
+        , Test.test "Record 10 fields complex types" <| 
+            \_ -> 
+                Json.Decode.decodeString (Json.Decode.list EffectDecoders.recordACharBListCharCMaybeIntDCharECharFResultStringResultStringMaybeListStringGCharHCharIRecordOneCharTwoStringJFloatDecoder) TestData.jsonRecordACharBListCharCMaybeIntDCharECharFResultStringListStringStringGCharHCharIRecordOneCharTwoStringJFloat
                     |> Expect.ok
         ]

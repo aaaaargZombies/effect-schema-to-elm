@@ -28,6 +28,39 @@ const testData = [
     one: Data.Char,
     two: Data.String,
   }),
+  Data.Record({
+    a: Data.Char,
+    b: Data.Char,
+    c: Data.Char,
+    d: Data.Char,
+    e: Data.Char,
+    f: Data.Char,
+    g: Data.Char,
+    h: Data.Char,
+    i: Data.Char,
+    j: Data.Char,
+  }),
+  Data.Record({
+    a: Data.Char,
+    b: Data.List(Data.Char),
+    c: Data.Maybe(Data.Int),
+    d: Data.Char,
+    e: Data.Char,
+    f: Data.Result({
+      error: Data.String,
+      value: Data.Result({
+        error: Data.String,
+        value: Data.Maybe(Data.List(Data.String)),
+      }),
+    }),
+    g: Data.Char,
+    h: Data.Char,
+    i: Data.Record({
+      one: Data.Char,
+      two: Data.String,
+    }),
+    j: Data.Float,
+  }),
 ].map((s) => {
   const ast = JSON.parse(JSON.stringify(s.ast));
   const name: string = Utils.astToName(ast);
