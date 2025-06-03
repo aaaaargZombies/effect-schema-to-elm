@@ -51,24 +51,35 @@ type AST
 main : Program Json.Decode.Value () ()
 main =
     Generate.fromJson
-        (Json.Decode.list decodeAST)
+        (Json.Decode.dict decodeAST)
         generate
 
 
-generate : List AST -> List Elm.File
+generate : Dict String AST -> List Elm.File
 generate data =
+    let
+        listOf = data 
+            |> Dict.toList 
+    in
     [ Elm.file [ "Generated", "EffectDecoders" ]
         (List.map
-            astToDeclaration
-            data
-        )
+            astToDecoderDeclaration
+            listOf
+        ),
+      Elm.file ["Generated", "EffectTypes"]
+        (List.map astToTypeDeclaration  listOf)
     ]
 
 
-astToDeclaration : AST -> Elm.Declaration
-astToDeclaration ast =
-    Elm.declaration (astToName ast ++ "Decoder")
+astToDecoderDeclaration : ( String , AST ) -> Elm.Declaration
+astToDecoderDeclaration ( name, ast ) =
+    Elm.declaration (name ++ "Decoder")
         (Elm.withType (Gen.Json.Decode.annotation_.decoder (astToAnnotation ast)) (astToDecoder ast))
+
+astToTypeDeclaration :  ( String , AST ) -> Elm.Declaration
+astToTypeDeclaration  ( name, ast ) =
+    Elm.alias (name)
+        (astToAnnotation ast)
 
 
 astToName : AST -> String
