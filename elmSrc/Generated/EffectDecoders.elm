@@ -1,15 +1,16 @@
 module Generated.EffectDecoders exposing (..)
 
+import Generated.EffectTypes
 import Json.Decode
 import Json.Decode.Extra
 
 
-myBoolDecoder : Json.Decode.Decoder Bool
+myBoolDecoder : Json.Decode.Decoder Generated.EffectTypes.MyBool
 myBoolDecoder =
     Json.Decode.bool
 
 
-myCharDecoder : Json.Decode.Decoder Char.Char
+myCharDecoder : Json.Decode.Decoder Generated.EffectTypes.MyChar
 myCharDecoder =
     Json.Decode.andThen
         (\andThenUnpack ->
@@ -26,22 +27,22 @@ myCharDecoder =
         Json.Decode.string
 
 
-myFloatDecoder : Json.Decode.Decoder Float
+myFloatDecoder : Json.Decode.Decoder Generated.EffectTypes.MyFloat
 myFloatDecoder =
     Json.Decode.float
 
 
-myIntDecoder : Json.Decode.Decoder Int
+myIntDecoder : Json.Decode.Decoder Generated.EffectTypes.MyInt
 myIntDecoder =
     Json.Decode.int
 
 
-myListDecoder : Json.Decode.Decoder (List String)
+myListDecoder : Json.Decode.Decoder Generated.EffectTypes.MyList
 myListDecoder =
     Json.Decode.list Json.Decode.string
 
 
-myMaybeDecoder : Json.Decode.Decoder (Maybe Int)
+myMaybeDecoder : Json.Decode.Decoder Generated.EffectTypes.MyMaybe
 myMaybeDecoder =
     Json.Decode.oneOf
         [ Json.Decode.andThen
@@ -69,7 +70,7 @@ myMaybeDecoder =
         ]
 
 
-myRecordDecoder : Json.Decode.Decoder { one : Char.Char, two : String }
+myRecordDecoder : Json.Decode.Decoder Generated.EffectTypes.MyRecord
 myRecordDecoder =
     Json.Decode.Extra.andMap
         (Json.Decode.field "two" Json.Decode.string)
@@ -95,19 +96,7 @@ myRecordDecoder =
         )
 
 
-myRecordComplexDecoder :
-    Json.Decode.Decoder
-        { a : Char.Char
-        , b : List Char.Char
-        , c : Maybe Int
-        , d : Char.Char
-        , e : Char.Char
-        , f : Result String (Result String (Maybe (List String)))
-        , g : Char.Char
-        , h : Char.Char
-        , i : { one : Char.Char, two : String }
-        , j : Float
-        }
+myRecordComplexDecoder : Json.Decode.Decoder Generated.EffectTypes.MyRecordComplex
 myRecordComplexDecoder =
     Json.Decode.Extra.andMap
         (Json.Decode.field "j" Json.Decode.float)
@@ -544,19 +533,7 @@ myRecordComplexDecoder =
         )
 
 
-myRecordLongDecoder :
-    Json.Decode.Decoder
-        { a : Char.Char
-        , b : Char.Char
-        , c : Char.Char
-        , d : Char.Char
-        , e : Char.Char
-        , f : Char.Char
-        , g : Char.Char
-        , h : Char.Char
-        , i : Char.Char
-        , j : Char.Char
-        }
+myRecordLongDecoder : Json.Decode.Decoder Generated.EffectTypes.MyRecordLong
 myRecordLongDecoder =
     Json.Decode.Extra.andMap
         (Json.Decode.field
@@ -792,7 +769,7 @@ myRecordLongDecoder =
         )
 
 
-myResultDecoder : Json.Decode.Decoder (Result String Int)
+myResultDecoder : Json.Decode.Decoder Generated.EffectTypes.MyResult
 myResultDecoder =
     Json.Decode.oneOf
         [ Json.Decode.andThen
@@ -824,7 +801,7 @@ myResultDecoder =
         ]
 
 
-myResult_Decoder : Json.Decode.Decoder (Result String (Maybe (List String)))
+myResult_Decoder : Json.Decode.Decoder Generated.EffectTypes.MyResult_
 myResult_Decoder =
     Json.Decode.oneOf
         [ Json.Decode.andThen
@@ -889,7 +866,7 @@ myResult_Decoder =
         ]
 
 
-myStringDecoder : Json.Decode.Decoder String
+myStringDecoder : Json.Decode.Decoder Generated.EffectTypes.MyString
 myStringDecoder =
     Json.Decode.string
 

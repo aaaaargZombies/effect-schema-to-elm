@@ -61,20 +61,21 @@ generate data =
         listOf = data 
             |> Dict.toList 
     in
-    [ Elm.file [ "Generated", "EffectDecoders" ]
+    [ Elm.file ["Generated", "EffectTypes"]
+        (List.map astToTypeDeclaration  listOf)
+    , Elm.file [ "Generated", "EffectDecoders" ]
         (List.map
             astToDecoderDeclaration
             listOf
-        ),
-      Elm.file ["Generated", "EffectTypes"]
-        (List.map astToTypeDeclaration  listOf)
+        )
     ]
 
 
 astToDecoderDeclaration : ( String , AST ) -> Elm.Declaration
 astToDecoderDeclaration ( name, ast ) =
+    -- TODO can I add the type from my aliases now
     Elm.declaration (name ++ "Decoder")
-        (Elm.withType (Gen.Json.Decode.annotation_.decoder (astToAnnotation ast)) (astToDecoder ast))
+        (Elm.withType (Gen.Json.Decode.annotation_.decoder (Type.named ["Generated","EffectTypes"] name )) (astToDecoder ast))
 
 astToTypeDeclaration :  ( String , AST ) -> Elm.Declaration
 astToTypeDeclaration  ( name, ast ) =
