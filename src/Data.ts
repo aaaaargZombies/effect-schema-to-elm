@@ -153,19 +153,28 @@ export const Unit = Schema.Tuple();
 
 // TODO this needs to be better
 // kinds probables needs to be Schema.Struct{ _tag: Schema.string, data: Schama.Tuple/Array()}
-export const Type = (name: string, ...kinds: Schema.Schema.Any[]) =>
-  Schema.Struct({
-    name: Schema.Literal(name),
-    kinds: Schema.Tuple(...kinds),
-  });
+// I want it to be a union of structs where all the inner types have a `_tag` field
 
-Type("Bert", Float, Int, Unit);
+type FunctionArg = {
+  _tag: Schema.Literal<[string]>;
+  [key: string]: Schema.Schema.Any;
+};
 
-export const Alias = (name: string, type: Schema.Schema.Any) =>
-  Schema.Struct({
-    name: Schema.Literal(name),
-    type: type,
-  });
+export const CustomType = (kind: FunctionArg, ...kinds: FunctionArg[]) =>
+  Schema.Union(Schema.Struct(kind), ...kinds.map((k) => Schema.Struct(k))).pipe(
+    Schema.annotations({
+      [ElmType]: "CustomType",
+    }),
+  );
+
+// Type("Bert", Float, Int, Unit);
+
+// Everything becomes an alias on ingesting via flags
+// export const Alias = (name: string, type: Schema.Schema.Any) =>
+//   Schema.Struct({
+//     name: Schema.Literal(name),
+//     type: type,
+//   });
 
 /// Elm platform stuff
 // Order

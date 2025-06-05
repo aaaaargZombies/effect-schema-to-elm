@@ -37,6 +37,15 @@ type AST
     | Maybe_ AST
     | Result_ AST AST
     | Record_ (Dict String AST)
+    | CustomType (List ( String, Dict String AST ))
+
+
+type alias Name =
+    String
+
+
+type alias Schemas =
+    Dict Name AST
 
 
 
@@ -56,11 +65,11 @@ main =
         generate
 
 
-generate : Dict String AST -> List Elm.File
-generate data =
+generate : Schemas -> List Elm.File
+generate schemas =
     let
         listOf =
-            data
+            schemas
                 |> Dict.toList
     in
     [ Elm.file [ "Generated", "EffectTypes" ]
@@ -422,6 +431,8 @@ decodeAST =
         , decodeResult
         , decodeResultDecleration
         , decodeRecord
+        , decodeSingleCustomType
+        , decodeMutlipleCustomType
         ]
 
 
@@ -670,3 +681,245 @@ decodeRecord =
                 else
                     Json.Decode.fail "Not a Record"
             )
+
+
+{-|
+
+    {
+      "_tag": "TypeLiteral",
+      "propertySignatures": [
+        {
+          "name": "_tag",
+          "type": { "_tag": "Literal", "literal": "two", "annotations": {} },
+          "isOptional": false,
+          "isReadonly": true,
+          "annotations": {}
+        },
+        {
+          "name": "one",
+          "type": {
+            "_tag": "StringKeyword",
+            "annotations": {
+              "Symbol(effect/annotation/Title)": "string",
+              "Symbol(effect/annotation/Description)": "a string"
+            }
+          },
+          "isOptional": false,
+          "isReadonly": true,
+          "annotations": {}
+        }
+      ],
+      "indexSignatures": [],
+      "annotations": { "Symbol(ElmType)": "CustomType" }
+    }
+
+-}
+decodeSingleCustomType : Json.Decode.Decoder AST
+decodeSingleCustomType =
+    Json.Decode.at [ "annotations", "Symbol(ElmType)" ] Json.Decode.string
+        |> Json.Decode.andThen
+            (\type_ ->
+                if type_ == "CustomType" then
+                    decodeLiteral
+
+                else
+                    Json.Decode.fail "Not a CustomType"
+            )
+
+
+decodeLiteral : Json.Decode.Decoder AST
+decodeLiteral =
+    Json.Decode.at [ "_tag" ] Json.Decode.string
+        |> Json.Decode.andThen
+            (\tag ->
+                if tag == "TypeLiteral" then
+                    Json.Decode.at [ "propertySignatures" ] decodeLiteralHelper
+                        |> Json.Decode.andThen
+                            (\literals ->
+                                case literals of
+                                    (Name name) :: [] ->
+                                        Json.Decode.succeed (CustomType [ ( name, Dict.empty ) ])
+
+                                    (Name name) :: tail ->
+                                        let
+                                            params =
+                                                tail
+                                                    |> List.filterMap
+                                                        (\helper ->
+                                                            case helper of
+                                                                Name _ ->
+                                                                    Nothing
+
+                                                                Param val ->
+                                                                    Just val
+                                                        )
+                                                    |> Dict.fromList
+                                        in
+                                        Json.Decode.succeed (CustomType [ ( name, params ) ])
+
+                                    _ ->
+                                        Json.Decode.fail "Single CustomType missing name"
+                            )
+
+                else
+                    Json.Decode.fail "Not a TypeLiteral"
+            )
+
+
+{-|
+
+    {
+      "_tag": "Union",
+      "types": [
+        {
+          "_tag": "TypeLiteral",
+          "propertySignatures": [
+            {
+              "name": "_tag",
+              "type": { "_tag": "Literal", "literal": "one", "annotations": {} },
+              "isOptional": false,
+              "isReadonly": true,
+              "annotations": {}
+            },
+            {
+              "name": "one",
+              "type": {
+                "_tag": "StringKeyword",
+                "annotations": {
+                  "Symbol(effect/annotation/Title)": "string",
+                  "Symbol(effect/annotation/Description)": "a string"
+                }
+              },
+              "isOptional": false,
+              "isReadonly": true,
+              "annotations": {}
+            }
+          ],
+          "indexSignatures": [],
+          "annotations": {}
+        },
+        {
+          "_tag": "TypeLiteral",
+          "propertySignatures": [
+            {
+              "name": "_tag",
+              "type": { "_tag": "Literal", "literal": "two", "annotations": {} },
+              "isOptional": false,
+              "isReadonly": true,
+              "annotations": {}
+            },
+            {
+              "name": "one",
+              "type": {
+                "_tag": "StringKeyword",
+                "annotations": {
+                  "Symbol(effect/annotation/Title)": "string",
+                  "Symbol(effect/annotation/Description)": "a string"
+                }
+              },
+              "isOptional": false,
+              "isReadonly": true,
+              "annotations": {}
+            }
+          ],
+          "indexSignatures": [],
+          "annotations": {}
+        }
+      ],
+      "annotations": { "Symbol(ElmType)": "CustomType" }
+    }
+
+-}
+decodeMutlipleCustomType : Json.Decode.Decoder AST
+decodeMutlipleCustomType =
+    Json.Decode.at [ "annotations", "Symbol(ElmType)" ] Json.Decode.string
+        |> Json.Decode.andThen
+            (\type_ ->
+                if type_ == "CustomType" then
+                    Json.Decode.at [ "types" ] (Json.Decode.list decodeLiteral)
+                        |> Json.Decode.map
+                            (\customTypes ->
+                                List.foldr
+                                    (\ct cts ->
+                                        case ( ct, cts ) of
+                                            ( CustomType [ x ], CustomType xs ) ->
+                                                CustomType (x :: xs)
+
+                                            _ ->
+                                                CustomType []
+                                    )
+                                    (CustomType [])
+                                    customTypes
+                            )
+                        |> Json.Decode.andThen
+                            (\cts ->
+                                case cts of
+                                    CustomType [] ->
+                                        Json.Decode.fail "Incorrectly formated for CustomType"
+
+                                    CustomType xs ->
+                                        Json.Decode.succeed (CustomType xs)
+
+                                    _ ->
+                                        Json.Decode.fail "Incorrectly formated for CustomType"
+                            )
+
+                else
+                    Json.Decode.fail "Not a CustomType"
+            )
+
+
+type LiteralHelper
+    = Name String
+    | Param ( String, AST )
+
+
+{-|
+
+    {
+      "_tag": "TypeLiteral",
+      "propertySignatures": [
+        {
+          "name": "_tag",
+          "type": { "_tag": "Literal", "literal": "two", "annotations": {} },
+          "isOptional": false,
+          "isReadonly": true,
+          "annotations": {}
+        },
+        {
+          "name": "one",
+          "type": {
+            "_tag": "StringKeyword",
+            "annotations": {
+              "Symbol(effect/annotation/Title)": "string",
+              "Symbol(effect/annotation/Description)": "a string"
+            }
+          },
+          "isOptional": false,
+          "isReadonly": true,
+          "annotations": {}
+        }
+      ],
+      "indexSignatures": [],
+      "annotations": { "Symbol(ElmType)": "CustomType" }
+    }
+
+-}
+decodeLiteralHelper : Json.Decode.Decoder (List LiteralHelper)
+decodeLiteralHelper =
+    Json.Decode.oneOf
+        [ Json.Decode.at [ "name" ] Json.Decode.string
+            |> Json.Decode.andThen
+                (\name ->
+                    if name == "_tag" then
+                        Json.Decode.at [ "type", "literal" ] Json.Decode.string
+                            |> Json.Decode.map (\literal -> Name literal)
+
+                    else
+                        Json.Decode.fail "Not the _tag property"
+                )
+        , Json.Decode.map2 (\name type_ -> Param ( name, type_ ))
+            (Json.Decode.at [ "name" ] Json.Decode.string)
+            (Json.Decode.at [ "type" ] decodeAST)
+        ]
+        |> Json.Decode.list
