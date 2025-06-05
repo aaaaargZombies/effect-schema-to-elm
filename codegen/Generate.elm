@@ -3,7 +3,7 @@ module Generate exposing (main)
 {-| -}
 
 import Dict exposing (Dict)
-import Elm
+import Elm exposing (Expression)
 import Elm.Annotation as Type
 import Elm.Arg
 import Elm.Case
@@ -11,6 +11,7 @@ import Elm.Op
 import Gen.CodeGen.Generate as Generate
 import Gen.Json.Decode
 import Gen.Json.Decode.Extra
+import Gen.Json.Encode
 import Gen.String
 import Gen.Tuple
 import Json.Decode
@@ -58,69 +59,44 @@ main =
 generate : Dict String AST -> List Elm.File
 generate data =
     let
-        listOf = data 
-            |> Dict.toList 
+        listOf =
+            data
+                |> Dict.toList
     in
-    [ Elm.file ["Generated", "EffectTypes"]
-        (List.map astToTypeDeclaration  listOf)
+    [ Elm.file [ "Generated", "EffectTypes" ]
+        (List.map astToTypeDeclaration listOf)
     , Elm.file [ "Generated", "EffectDecoders" ]
         (List.map
             astToDecoderDeclaration
             listOf
         )
+    , Elm.file [ "Generated", "EffectEncoders" ]
+        (List.map
+            astToEncoderDeclaration
+            listOf
+        )
     ]
 
 
-astToDecoderDeclaration : ( String , AST ) -> Elm.Declaration
+astToDecoderDeclaration : ( String, AST ) -> Elm.Declaration
 astToDecoderDeclaration ( name, ast ) =
-    -- TODO can I add the type from my aliases now
     Elm.declaration (name ++ "Decoder")
-        (Elm.withType (Gen.Json.Decode.annotation_.decoder (Type.named ["Generated","EffectTypes"] name )) (astToDecoder ast))
+        (Elm.withType (Gen.Json.Decode.annotation_.decoder (Type.named [ "Generated", "EffectTypes" ] name)) (astToDecoder ast))
 
-astToTypeDeclaration :  ( String , AST ) -> Elm.Declaration
-astToTypeDeclaration  ( name, ast ) =
-    Elm.alias (name)
+
+astToTypeDeclaration : ( String, AST ) -> Elm.Declaration
+astToTypeDeclaration ( name, ast ) =
+    Elm.alias name
         (astToAnnotation ast)
 
 
-astToName : AST -> String
-astToName ast =
-    case ast of
-        Bool_ ->
-            "Bool"
-
-        Char_ ->
-            "Char"
-
-        Float_ ->
-            "Float"
-
-        Int_ ->
-            "Int"
-
-        String_ ->
-            "String"
-
-        List_ a ->
-            "List" ++ astToName a
-
-        Maybe_ a ->
-            "Maybe" ++ astToName a
-
-        Result_ err ok ->
-            "Result" ++ astToName err ++ astToName ok
-
-        Record_ dict ->
-            "Record"
-                ++ (dict
-                        |> Dict.toList
-                        |> List.map
-                            (\( name, type_ ) ->
-                                capitalize name
-                                    ++ astToName type_
-                            )
-                        |> String.join ""
-                   )
+astToEncoderDeclaration : ( String, AST ) -> Elm.Declaration
+astToEncoderDeclaration ( name, ast ) =
+    Elm.declaration (name ++ "Encoder")
+        (Elm.withType
+            (Type.function [ Type.named [ "Generated", "EffectTypes" ] name ] Gen.Json.Encode.annotation_.value)
+            (Elm.functionReduced "arg" (\arg -> astToEncoder ast arg))
+        )
 
 
 
@@ -197,14 +173,6 @@ astToDecoder ast =
                     (Gen.Json.Decode.field "_tag" Gen.Json.Decode.string)
                 ]
 
-        -- { "one": "0", "two": "K6" },
-        -- { "one": "^", "two": "vCr" }
-        -- https://package.elm-lang.org/packages/mdgriffith/elm-codegen/latest/Elm#record
-        -- normally you would
-        -- Json.Decode.map2 (\a b -> {one = a, two = b})
-        --    Json.Decode.at "one" Json.Decode.string
-        --    Json.Decode.at "two" Json.Decode.string
-        -- but I have an unknow mapN
         Record_ dict ->
             let
                 listOf =
@@ -212,7 +180,6 @@ astToDecoder ast =
             in
             List.foldl
                 (\( name, ast_ ) expression ->
-                    -- need to apply this (map2 (|>))
                     Gen.Json.Decode.Extra.andMap (Gen.Json.Decode.field name (astToDecoder ast_)) expression
                 )
                 (Gen.Json.Decode.succeed
@@ -298,6 +265,95 @@ astToDecoder ast =
    █      █  █ █ █      █    █ █    █ █      █   ▀▄     ▀█
    █▄▄▄▄▄ █   ██  ▀▄▄▄▀  █▄▄█  █▄▄▄▀  █▄▄▄▄▄ █    ▀ ▀▄▄▄█▀
 -}
+
+
+astToEncoder : AST -> (Expression -> Expression)
+astToEncoder ast =
+    case ast of
+        Bool_ ->
+            Gen.Json.Encode.call_.bool
+
+        Char_ ->
+            \arg -> Gen.Json.Encode.call_.string (Gen.String.call_.fromChar arg)
+
+        Float_ ->
+            Gen.Json.Encode.call_.float
+
+        Int_ ->
+            Gen.Json.Encode.call_.int
+
+        String_ ->
+            Gen.Json.Encode.call_.string
+
+        List_ a ->
+            Gen.Json.Encode.call_.list (Elm.functionReduced "arg" (\arg -> astToEncoder a arg))
+
+        Maybe_ a ->
+            let
+                paramEncoder =
+                    astToEncoder a
+            in
+            \myMaybe ->
+                Elm.Case.maybe myMaybe
+                    { nothing =
+                        -- {"_id":"Option","_tag":"None"}
+                        Gen.Json.Encode.object
+                            [ Elm.tuple (Elm.string "_id") (Gen.Json.Encode.string "Option")
+                            , Elm.tuple (Elm.string "_tag") (Gen.Json.Encode.string "None")
+                            ]
+                    , just =
+                        ( "value"
+                        , \content ->
+                            -- {"_id":"Option","_tag":"Some","value":-5}
+                            Gen.Json.Encode.object
+                                [ Elm.tuple (Elm.string "_id") (Gen.Json.Encode.string "Option")
+                                , Elm.tuple (Elm.string "_tag") (Gen.Json.Encode.string "Some")
+                                , Elm.tuple (Elm.string "value") (paramEncoder content)
+                                ]
+                        )
+                    }
+
+        Result_ errorType valueType ->
+            let
+                errorEncoder =
+                    astToEncoder errorType
+
+                valueEncoder =
+                    astToEncoder valueType
+            in
+            \myResult ->
+                Elm.Case.result myResult
+                    { ok =
+                        Tuple.pair "ok" <|
+                            \ok ->
+                                -- {"_id":"Either","_tag":"Right","right":-3}
+                                Gen.Json.Encode.object
+                                    [ Elm.tuple (Elm.string "_id") (Gen.Json.Encode.string "Either")
+                                    , Elm.tuple (Elm.string "_tag") (Gen.Json.Encode.string "Right")
+                                    , Elm.tuple (Elm.string "right") (valueEncoder ok)
+                                    ]
+                    , err =
+                        Tuple.pair "err" <|
+                            \err ->
+                                -- {"_id":"Either","_tag":"Left","left":""}
+                                Gen.Json.Encode.object
+                                    [ Elm.tuple (Elm.string "_id") (Gen.Json.Encode.string "Either")
+                                    , Elm.tuple (Elm.string "_tag") (Gen.Json.Encode.string "Left")
+                                    , Elm.tuple (Elm.string "left") (errorEncoder err)
+                                    ]
+                    }
+
+        Record_ dict ->
+            let
+                listOf =
+                    Dict.toList dict
+            in
+            \myRecord ->
+                Gen.Json.Encode.object
+                    (List.map (\( name, ast_ ) -> Elm.tuple (Elm.string name) (astToEncoder ast_ (Elm.get name myRecord))) listOf)
+
+
+
 {-
      ▄▄   ▄▄   ▄ ▄▄   ▄  ▄▄▄▄ ▄▄▄▄▄▄▄   ▄▄  ▄▄▄▄▄▄▄ ▄▄▄▄▄   ▄▄▄▄  ▄▄   ▄  ▄▄▄▄
      ██   █▀▄  █ █▀▄  █ ▄▀  ▀▄   █      ██     █      █    ▄▀  ▀▄ █▀▄  █ █▀   ▀
@@ -347,7 +403,6 @@ astToAnnotation ast =
      █    █  █ █ █    █ █          ▀█   █
    ▄▄█▄▄  █   ██  ▀▄▄▄▀ █▄▄▄▄▄ ▀▄▄▄█▀   █
 -}
-{- Basics -}
 
 
 decodeAST : Json.Decode.Decoder AST
@@ -368,6 +423,10 @@ decodeAST =
         , decodeResultDecleration
         , decodeRecord
         ]
+
+
+
+{- Basics -}
 
 
 decodeBool : Json.Decode.Decoder AST
@@ -611,21 +670,3 @@ decodeRecord =
                 else
                     Json.Decode.fail "Not a Record"
             )
-
-
-
-{-
-   █    █ █      █      █   ▀█ █      █   ▀█ █▀   ▀
-   █▄▄▄▄█ █▄▄▄▄▄ █      █▄▄▄█▀ █▄▄▄▄▄ █▄▄▄▄▀ ▀█▄▄▄
-   █    █ █      █      █      █      █   ▀▄     ▀█
-   █    █ █▄▄▄▄▄ █▄▄▄▄▄ █      █▄▄▄▄▄ █    ▀ ▀▄▄▄█▀
--}
-
-
-capitalize : String -> String
-capitalize s =
-    s
-        |> String.uncons
-        |> Maybe.map (Tuple.mapFirst Char.toUpper)
-        |> Maybe.map (\( a, b ) -> String.cons a b)
-        |> Maybe.withDefault s

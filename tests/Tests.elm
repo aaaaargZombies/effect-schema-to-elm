@@ -2,61 +2,60 @@ module Tests exposing (..)
 
 import Expect
 import Generated.EffectDecoders as EffectDecoders
+import Generated.EffectEncoders as EffectEncoders
 import Json.Decode
+import Json.Encode
 import Test exposing (Test)
 import TestData
 
 
+decoderTestHelper : String -> String -> Json.Decode.Decoder a -> Test
+decoderTestHelper description input decoder =
+    Test.test description <|
+        \_ ->
+            Json.Decode.decodeString (Json.Decode.list decoder) input
+                |> Expect.ok
+
+
+encoderTestHelper : String -> String -> Json.Decode.Decoder a -> (a -> Json.Encode.Value) -> Test
+encoderTestHelper description input decoder encoder =
+    Test.test description <|
+        \_ ->
+            Json.Decode.decodeString (Json.Decode.list decoder) input
+                |> Result.map (\decoded -> Json.Encode.list encoder decoded)
+                |> Result.andThen (Json.Decode.decodeValue (Json.Decode.list decoder))
+                |> Expect.ok
+
+
 suite : Test
 suite =
-    Test.describe "generated decoders vs Effect arbitraries"
-        [ Test.test "Bool decoder" <|
-            \_ ->
-                Json.Decode.decodeString (Json.Decode.list EffectDecoders.myBoolDecoder) TestData.myBoolJson
-                    |> Expect.ok
-        , Test.test "Char decoder" <|
-            \_ ->
-                Json.Decode.decodeString (Json.Decode.list EffectDecoders.myCharDecoder) TestData.myCharJson
-                    |> Debug.log "FAIL"
-                    |> Expect.ok
-        , Test.test "Float decoder" <|
-            \_ ->
-                Json.Decode.decodeString (Json.Decode.list EffectDecoders.myFloatDecoder) TestData.myFloatJson
-                    |> Expect.ok
-        , Test.test "Int decoder" <|
-            \_ ->
-                Json.Decode.decodeString (Json.Decode.list EffectDecoders.myIntDecoder) TestData.myIntJson
-                    |> Expect.ok
-        , Test.test "String decoder" <|
-            \_ ->
-                Json.Decode.decodeString (Json.Decode.list EffectDecoders.myStringDecoder) TestData.myStringJson
-                    |> Expect.ok
-        , Test.test "List String decoder" <|
-            \_ ->
-                Json.Decode.decodeString (Json.Decode.list EffectDecoders.myListDecoder) TestData.myListJson
-                    |> Expect.ok
-        , Test.test "Maybe Int decoder" <|
-            \_ ->
-                Json.Decode.decodeString (Json.Decode.list EffectDecoders.myMaybeDecoder) TestData.myMaybeJson
-                    |> Expect.ok
-        , Test.test "Result String Int decoder" <|
-            \_ ->
-                Json.Decode.decodeString (Json.Decode.list EffectDecoders.myResultDecoder) TestData.myResultJson
-                    |> Expect.ok
-        , Test.test "Result Complex decoder" <|
-            \_ ->
-                Json.Decode.decodeString (Json.Decode.list EffectDecoders.myResult_Decoder) TestData.myResult_Json
-                    |> Expect.ok
-        , Test.test "Record { one : Char, two : String }" <|
-            \_ ->
-                Json.Decode.decodeString (Json.Decode.list EffectDecoders.myRecordDecoder) TestData.myRecordJson
-                    |> Expect.ok
-        , Test.test "Record decoder 10 Char entries" <|
-            \_ ->
-                Json.Decode.decodeString (Json.Decode.list EffectDecoders.myRecordLongDecoder) TestData.myRecordLongJson
-                    |> Expect.ok
-        , Test.test "Record Complex decoder" <|
-            \_ ->
-                Json.Decode.decodeString (Json.Decode.list EffectDecoders.myRecordComplexDecoder) TestData.myRecordComplexJson
-                    |> Expect.ok
+    Test.describe "suit"
+        [ Test.describe "generated decoders vs Effect arbitraries"
+            [ decoderTestHelper "Bool decoder" TestData.myBoolJson EffectDecoders.myBoolDecoder
+            , decoderTestHelper "Char decoder" TestData.myCharJson EffectDecoders.myCharDecoder
+            , decoderTestHelper "Float decoder" TestData.myFloatJson EffectDecoders.myFloatDecoder
+            , decoderTestHelper "Int decoder" TestData.myIntJson EffectDecoders.myIntDecoder
+            , decoderTestHelper "String decoder" TestData.myStringJson EffectDecoders.myStringDecoder
+            , decoderTestHelper "List String decoder" TestData.myListJson EffectDecoders.myListDecoder
+            , decoderTestHelper "Maybe Int decoder" TestData.myMaybeJson EffectDecoders.myMaybeDecoder
+            , decoderTestHelper "Result String Int decoder" TestData.myResultJson EffectDecoders.myResultDecoder
+            , decoderTestHelper "Result Complex decoder" TestData.myResult_Json EffectDecoders.myResult_Decoder
+            , decoderTestHelper "Record { one : Char, two : String }" TestData.myRecordJson EffectDecoders.myRecordDecoder
+            , decoderTestHelper "Record decoder 10 Char entries" TestData.myRecordLongJson EffectDecoders.myRecordLongDecoder
+            , decoderTestHelper "Record Complex decoder" TestData.myRecordComplexJson EffectDecoders.myRecordComplexDecoder
+            ]
+        , Test.describe "generated encoders vs Effect arbitraries"
+            [ encoderTestHelper "Bool decoder" TestData.myBoolJson EffectDecoders.myBoolDecoder EffectEncoders.myBoolEncoder
+            , encoderTestHelper "Char decoder" TestData.myCharJson EffectDecoders.myCharDecoder EffectEncoders.myCharEncoder
+            , encoderTestHelper "Float decoder" TestData.myFloatJson EffectDecoders.myFloatDecoder EffectEncoders.myFloatEncoder
+            , encoderTestHelper "Int decoder" TestData.myIntJson EffectDecoders.myIntDecoder EffectEncoders.myIntEncoder
+            , encoderTestHelper "String decoder" TestData.myStringJson EffectDecoders.myStringDecoder EffectEncoders.myStringEncoder
+            , encoderTestHelper "List String decoder" TestData.myListJson EffectDecoders.myListDecoder EffectEncoders.myListEncoder
+            , encoderTestHelper "Maybe Int decoder" TestData.myMaybeJson EffectDecoders.myMaybeDecoder EffectEncoders.myMaybeEncoder
+            , encoderTestHelper "Result String Int decoder" TestData.myResultJson EffectDecoders.myResultDecoder EffectEncoders.myResultEncoder
+            , encoderTestHelper "Result Complex decoder" TestData.myResult_Json EffectDecoders.myResult_Decoder EffectEncoders.myResult_Encoder
+            , encoderTestHelper "Record { one : Char, two : String }" TestData.myRecordJson EffectDecoders.myRecordDecoder EffectEncoders.myRecordEncoder
+            , encoderTestHelper "Record decoder 10 Char entries" TestData.myRecordLongJson EffectDecoders.myRecordLongDecoder EffectEncoders.myRecordLongEncoder
+            , encoderTestHelper "Record Complex decoder" TestData.myRecordComplexJson EffectDecoders.myRecordComplexDecoder EffectEncoders.myRecordComplexEncoder
+            ]
         ]
