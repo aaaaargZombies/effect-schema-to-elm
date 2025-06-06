@@ -15,6 +15,7 @@ import Gen.Json.Encode
 import Gen.String
 import Gen.Tuple
 import Json.Decode
+import Set exposing (Set)
 
 
 
@@ -95,8 +96,30 @@ astToDecoderDeclaration ( name, ast ) =
 
 astToTypeDeclaration : ( String, AST ) -> Elm.Declaration
 astToTypeDeclaration ( name, ast ) =
-    Elm.alias name
-        (astToAnnotation ast)
+    let
+        typeName =
+            safeTypeName name
+    in
+    case ast of
+        CustomType varients ->
+            Elm.customType typeName
+                (List.map
+                    (\( name_, params ) ->
+                        Elm.variantWith
+                            (safeTypeName name_)
+                            (List.map
+                                (\( _, ast_ ) ->
+                                    astToAnnotation ast_
+                                )
+                                (Dict.toList params)
+                            )
+                    )
+                    varients
+                )
+
+        _ ->
+            Elm.alias typeName
+                (astToAnnotation ast)
 
 
 astToEncoderDeclaration : ( String, AST ) -> Elm.Declaration
@@ -150,6 +173,34 @@ astToDecoder ast =
                             ]
                     )
 
+        CustomType variants ->
+            Gen.Json.Decode.oneOf
+                (List.map
+                    (\( name_, params ) ->
+                        let
+                            listOfParams =
+                                Dict.toList params
+                        in
+                        List.foldl
+                            (\( name__, ast_ ) expression ->
+                                Gen.Json.Decode.Extra.andMap (Gen.Json.Decode.field name__ (astToDecoder ast_)) expression
+                            )
+                            (Gen.Json.Decode.succeed
+                                -- can I use this
+                                -- https://package.elm-lang.org/packages/mdgriffith/elm-codegen/latest/Elm#value
+                                -- to get the tupe constructor and use it as the accumulator for my fold
+                                (Elm.value
+                                    { importFrom = [ "Generated", "EffectTypes" ]
+                                    , name = safeTypeName name_
+                                    , annotation = Nothing
+                                    }
+                                )
+                            )
+                            listOfParams
+                    )
+                    variants
+                )
+
         Float_ ->
             Gen.Json.Decode.float
 
@@ -182,10 +233,10 @@ astToDecoder ast =
                     (Gen.Json.Decode.field "_tag" Gen.Json.Decode.string)
                 ]
 
-        Record_ dict ->
+        Record_ params ->
             let
-                listOf =
-                    Dict.toList dict
+                listOfParams =
+                    Dict.toList params
             in
             List.foldl
                 (\( name, ast_ ) expression ->
@@ -193,18 +244,18 @@ astToDecoder ast =
                 )
                 (Gen.Json.Decode.succeed
                     (Elm.function
-                        (List.map (\( name, _ ) -> ( name, Nothing )) listOf)
+                        (List.map (\( name, _ ) -> ( name, Nothing )) listOfParams)
                         (\args ->
                             Elm.record
                                 (List.map2
                                     (\( name, _ ) arg -> ( name, arg ))
-                                    listOf
+                                    listOfParams
                                     args
                                 )
                         )
                     )
                 )
-                listOf
+                listOfParams
 
         Result_ err ok ->
             Gen.Json.Decode.oneOf
@@ -284,6 +335,9 @@ astToEncoder ast =
 
         Char_ ->
             \arg -> Gen.Json.Encode.call_.string (Gen.String.call_.fromChar arg)
+
+        CustomType variants ->
+            Debug.todo "maybe take from the file???"
 
         Float_ ->
             Gen.Json.Encode.call_.float
@@ -380,6 +434,9 @@ astToAnnotation ast =
 
         Char_ ->
             Type.char
+
+        CustomType variants ->
+            Debug.todo "maybe take from the file???"
 
         Float_ ->
             Type.float
@@ -923,3 +980,84 @@ decodeLiteralHelper =
             (Json.Decode.at [ "type" ] decodeAST)
         ]
         |> Json.Decode.list
+
+
+
+{-
+   ▄    ▄ ▄▄▄▄▄▄ ▄      ▄▄▄▄▄  ▄▄▄▄▄▄ ▄▄▄▄▄   ▄▄▄▄
+   █    █ █      █      █   ▀█ █      █   ▀█ █▀   ▀
+   █▄▄▄▄█ █▄▄▄▄▄ █      █▄▄▄█▀ █▄▄▄▄▄ █▄▄▄▄▀ ▀█▄▄▄
+   █    █ █      █      █      █      █   ▀▄     ▀█
+   █    █ █▄▄▄▄▄ █▄▄▄▄▄ █      █▄▄▄▄▄ █    ▀ ▀▄▄▄█▀
+-}
+
+
+reservedList : Set String
+reservedList =
+    -- Copied from elm-open-api-cli Copied from elm-syntax
+    [ "module"
+    , "exposing"
+    , "import"
+    , "as"
+    , "if"
+    , "then"
+    , "else"
+    , "let"
+    , "in"
+    , "case"
+    , "of"
+    , "port"
+    , "type"
+    , "where"
+    ]
+        |> Set.fromList
+
+
+mapFirst : (Char -> Char) -> String -> String
+mapFirst f s =
+    s
+        |> String.uncons
+        |> Maybe.map (Tuple.mapFirst f)
+        |> Maybe.map (\( a, b ) -> String.cons a b)
+        |> Maybe.withDefault s
+
+
+clean : String -> String
+clean s =
+    s
+        |> String.filter (\c -> Char.isAlphaNum c || '_' == c)
+        |> (\s_ ->
+                if Set.member s_ reservedList then
+                    s_ ++ "_"
+
+                else
+                    s_
+           )
+        |> mapFirst
+            (\c ->
+                if Char.isAlpha c then
+                    c
+
+                else
+                    'a'
+            )
+
+
+capitalize : String -> String
+capitalize =
+    mapFirst Char.toUpper
+
+
+decapitalize : String -> String
+decapitalize =
+    mapFirst Char.toLower
+
+
+safeTypeName : String -> String
+safeTypeName s =
+    s |> clean |> capitalize
+
+
+safeValueName : String -> String
+safeValueName s =
+    s |> clean |> decapitalize
