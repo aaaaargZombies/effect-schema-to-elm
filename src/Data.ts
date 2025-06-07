@@ -155,17 +155,31 @@ export const Unit = Schema.Tuple();
 // kinds probables needs to be Schema.Struct{ _tag: Schema.string, data: Schama.Tuple/Array()}
 // I want it to be a union of structs where all the inner types have a `_tag` field
 
-type FunctionArg = {
+type CustomTypeVariantArg = {
   _tag: Schema.Literal<[string]>;
   [key: string]: Schema.Schema.Any;
 };
 
-export const CustomType = (kind: FunctionArg, ...kinds: FunctionArg[]) =>
-  Schema.Union(Schema.Struct(kind), ...kinds.map((k) => Schema.Struct(k))).pipe(
+// TODO is this a good API for folks making a custom type?
+// how ill I decode it?
+export const CustomType = (
+  name: string,
+  kind: CustomTypeVariantArg,
+  ...kinds: CustomTypeVariantArg[]
+) => {
+  const variants = [kind, ...kinds]
+    .map((k) => ({
+      _id: Schema.Literal(name),
+      ...k,
+    }))
+    .map((k) => Schema.Struct(k));
+
+  return Schema.Union(...variants).pipe(
     Schema.annotations({
       [ElmType]: "CustomType",
     }),
   );
+};
 
 // Type("Bert", Float, Int, Unit);
 

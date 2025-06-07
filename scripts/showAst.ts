@@ -6,8 +6,8 @@ import * as Data from "../src/Data.js";
 const show = (a) => pipe(a, (a) => a.ast, JSON.stringify, console.log);
 
 show(
-  Data.CustomType(
-    { _tag: Schema.Literal("one"), one: Data.String },
-    { _tag: Schema.Literal("two"), one: Data.Char },
-  ),
+  Data.CustomType("myCustomType", {
+    _tag: Schema.Literal("two"),
+    one: Data.Char,
+  }),
 );

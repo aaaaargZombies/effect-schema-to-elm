@@ -38,7 +38,7 @@ type AST
     | Maybe_ AST
     | Result_ AST AST
     | Record_ (Dict String AST)
-    | CustomType (List ( String, Dict String AST ))
+    | CustomType String (List ( String, Dict String AST ))
 
 
 type alias Name =
@@ -101,8 +101,8 @@ astToTypeDeclaration ( name, ast ) =
             safeTypeName name
     in
     case ast of
-        CustomType varients ->
-            Elm.customType typeName
+        CustomType customTypeName varients ->
+            Elm.customType (safeTypeName customTypeName)
                 (List.map
                     (\( name_, params ) ->
                         Elm.variantWith
@@ -173,7 +173,8 @@ astToDecoder ast =
                             ]
                     )
 
-        CustomType variants ->
+        CustomType customTypeName variants ->
+            -- TODO new AST type
             Gen.Json.Decode.oneOf
                 (List.map
                     (\( name_, params ) ->
@@ -336,8 +337,10 @@ astToEncoder ast =
         Char_ ->
             \arg -> Gen.Json.Encode.call_.string (Gen.String.call_.fromChar arg)
 
-        CustomType variants ->
-            Debug.todo "maybe take from the file???"
+        CustomType customTypeName variants ->
+            \arg ->
+                -- Elm.Case.custom arg (Type.named [ "Generated", "EffectTypes" ] "TODO!!!")
+                Debug.todo "TODO"
 
         Float_ ->
             Gen.Json.Encode.call_.float
@@ -435,8 +438,8 @@ astToAnnotation ast =
         Char_ ->
             Type.char
 
-        CustomType variants ->
-            Debug.todo "maybe take from the file???"
+        CustomType customTypeName _ ->
+            Type.named [ "Generated", "EffectTypes" ] (safeTypeName customTypeName)
 
         Float_ ->
             Type.float
@@ -488,8 +491,7 @@ decodeAST =
         , decodeResult
         , decodeResultDecleration
         , decodeRecord
-        , decodeSingleCustomType
-        , decodeMutlipleCustomType
+        , decodeCustomType
         ]
 
 
@@ -740,51 +742,56 @@ decodeRecord =
             )
 
 
-{-|
+decodeCustomType : Json.Decode.Decoder AST
+decodeCustomType =
+    Json.Decode.oneOf [ decodeMutlipleCustomType, decodeSingleCustomType ]
+        |> Json.Decode.andThen
+            (\literals ->
+                case literals of
+                    ( typeName, variantName, params ) :: [] ->
+                        Json.Decode.succeed (CustomType typeName [ ( variantName, params ) ])
 
-    {
-      "_tag": "TypeLiteral",
-      "propertySignatures": [
-        {
-          "name": "_tag",
-          "type": { "_tag": "Literal", "literal": "two", "annotations": {} },
-          "isOptional": false,
-          "isReadonly": true,
-          "annotations": {}
-        },
-        {
-          "name": "one",
-          "type": {
-            "_tag": "StringKeyword",
-            "annotations": {
-              "Symbol(effect/annotation/Title)": "string",
-              "Symbol(effect/annotation/Description)": "a string"
-            }
-          },
-          "isOptional": false,
-          "isReadonly": true,
-          "annotations": {}
-        }
-      ],
-      "indexSignatures": [],
-      "annotations": { "Symbol(ElmType)": "CustomType" }
-    }
+                    (( typeName, _, _ ) :: _) as variants ->
+                        let
+                            variants_ =
+                                variants
+                                    |> List.map (\( _, vName, params ) -> ( vName, params ))
+                        in
+                        Json.Decode.succeed (CustomType typeName variants_)
 
--}
-decodeSingleCustomType : Json.Decode.Decoder AST
+                    [] ->
+                        Json.Decode.fail "Empty union schema - cannot create CustomType"
+            )
+
+
+decodeSingleCustomType : Json.Decode.Decoder (List ( String, String, Dict String AST ))
 decodeSingleCustomType =
     Json.Decode.at [ "annotations", "Symbol(ElmType)" ] Json.Decode.string
         |> Json.Decode.andThen
             (\type_ ->
                 if type_ == "CustomType" then
                     decodeLiteral
+                        |> Json.Decode.map (\a -> [ a ])
 
                 else
                     Json.Decode.fail "Not a CustomType"
             )
 
 
-decodeLiteral : Json.Decode.Decoder AST
+decodeMutlipleCustomType : Json.Decode.Decoder (List ( String, String, Dict String AST ))
+decodeMutlipleCustomType =
+    Json.Decode.at [ "annotations", "Symbol(ElmType)" ] Json.Decode.string
+        |> Json.Decode.andThen
+            (\type_ ->
+                if type_ == "CustomType" then
+                    Json.Decode.at [ "types" ] (Json.Decode.list decodeLiteral)
+
+                else
+                    Json.Decode.fail "Not a CustomType"
+            )
+
+
+decodeLiteral : Json.Decode.Decoder ( String, String, Dict String AST )
 decodeLiteral =
     Json.Decode.at [ "_tag" ] Json.Decode.string
         |> Json.Decode.andThen
@@ -794,17 +801,20 @@ decodeLiteral =
                         |> Json.Decode.andThen
                             (\literals ->
                                 case literals of
-                                    (Name name) :: [] ->
-                                        Json.Decode.succeed (CustomType [ ( name, Dict.empty ) ])
+                                    (TypeName tName) :: (VariantName vName) :: [] ->
+                                        Json.Decode.succeed ( tName, vName, Dict.empty )
 
-                                    (Name name) :: tail ->
+                                    (TypeName tName) :: (VariantName vName) :: tail ->
                                         let
                                             params =
                                                 tail
                                                     |> List.filterMap
                                                         (\helper ->
                                                             case helper of
-                                                                Name _ ->
+                                                                TypeName _ ->
+                                                                    Nothing
+
+                                                                VariantName _ ->
                                                                     Nothing
 
                                                                 Param val ->
@@ -812,7 +822,7 @@ decodeLiteral =
                                                         )
                                                     |> Dict.fromList
                                         in
-                                        Json.Decode.succeed (CustomType [ ( name, params ) ])
+                                        Json.Decode.succeed ( tName, vName, params )
 
                                     _ ->
                                         Json.Decode.fail "Single CustomType missing name"
@@ -823,154 +833,35 @@ decodeLiteral =
             )
 
 
-{-|
 
-    {
-      "_tag": "Union",
-      "types": [
-        {
-          "_tag": "TypeLiteral",
-          "propertySignatures": [
-            {
-              "name": "_tag",
-              "type": { "_tag": "Literal", "literal": "one", "annotations": {} },
-              "isOptional": false,
-              "isReadonly": true,
-              "annotations": {}
-            },
-            {
-              "name": "one",
-              "type": {
-                "_tag": "StringKeyword",
-                "annotations": {
-                  "Symbol(effect/annotation/Title)": "string",
-                  "Symbol(effect/annotation/Description)": "a string"
-                }
-              },
-              "isOptional": false,
-              "isReadonly": true,
-              "annotations": {}
-            }
-          ],
-          "indexSignatures": [],
-          "annotations": {}
-        },
-        {
-          "_tag": "TypeLiteral",
-          "propertySignatures": [
-            {
-              "name": "_tag",
-              "type": { "_tag": "Literal", "literal": "two", "annotations": {} },
-              "isOptional": false,
-              "isReadonly": true,
-              "annotations": {}
-            },
-            {
-              "name": "one",
-              "type": {
-                "_tag": "StringKeyword",
-                "annotations": {
-                  "Symbol(effect/annotation/Title)": "string",
-                  "Symbol(effect/annotation/Description)": "a string"
-                }
-              },
-              "isOptional": false,
-              "isReadonly": true,
-              "annotations": {}
-            }
-          ],
-          "indexSignatures": [],
-          "annotations": {}
-        }
-      ],
-      "annotations": { "Symbol(ElmType)": "CustomType" }
-    }
-
+{-
+   ▄    ▄ ▄▄▄▄▄▄ ▄      ▄▄▄▄▄  ▄▄▄▄▄▄ ▄▄▄▄▄   ▄▄▄▄
+   █    █ █      █      █   ▀█ █      █   ▀█ █▀   ▀
+   █▄▄▄▄█ █▄▄▄▄▄ █      █▄▄▄█▀ █▄▄▄▄▄ █▄▄▄▄▀ ▀█▄▄▄
+   █    █ █      █      █      █      █   ▀▄     ▀█
+   █    █ █▄▄▄▄▄ █▄▄▄▄▄ █      █▄▄▄▄▄ █    ▀ ▀▄▄▄█▀
 -}
-decodeMutlipleCustomType : Json.Decode.Decoder AST
-decodeMutlipleCustomType =
-    Json.Decode.at [ "annotations", "Symbol(ElmType)" ] Json.Decode.string
-        |> Json.Decode.andThen
-            (\type_ ->
-                if type_ == "CustomType" then
-                    Json.Decode.at [ "types" ] (Json.Decode.list decodeLiteral)
-                        |> Json.Decode.map
-                            (\customTypes ->
-                                List.foldr
-                                    (\ct cts ->
-                                        case ( ct, cts ) of
-                                            ( CustomType [ x ], CustomType xs ) ->
-                                                CustomType (x :: xs)
-
-                                            _ ->
-                                                CustomType []
-                                    )
-                                    (CustomType [])
-                                    customTypes
-                            )
-                        |> Json.Decode.andThen
-                            (\cts ->
-                                case cts of
-                                    CustomType [] ->
-                                        Json.Decode.fail "Incorrectly formated for CustomType"
-
-                                    CustomType xs ->
-                                        Json.Decode.succeed (CustomType xs)
-
-                                    _ ->
-                                        Json.Decode.fail "Incorrectly formated for CustomType"
-                            )
-
-                else
-                    Json.Decode.fail "Not a CustomType"
-            )
 
 
 type LiteralHelper
-    = Name String
+    = TypeName String
+    | VariantName String
     | Param ( String, AST )
 
 
-{-|
-
-    {
-      "_tag": "TypeLiteral",
-      "propertySignatures": [
-        {
-          "name": "_tag",
-          "type": { "_tag": "Literal", "literal": "two", "annotations": {} },
-          "isOptional": false,
-          "isReadonly": true,
-          "annotations": {}
-        },
-        {
-          "name": "one",
-          "type": {
-            "_tag": "StringKeyword",
-            "annotations": {
-              "Symbol(effect/annotation/Title)": "string",
-              "Symbol(effect/annotation/Description)": "a string"
-            }
-          },
-          "isOptional": false,
-          "isReadonly": true,
-          "annotations": {}
-        }
-      ],
-      "indexSignatures": [],
-      "annotations": { "Symbol(ElmType)": "CustomType" }
-    }
-
--}
 decodeLiteralHelper : Json.Decode.Decoder (List LiteralHelper)
 decodeLiteralHelper =
     Json.Decode.oneOf
         [ Json.Decode.at [ "name" ] Json.Decode.string
             |> Json.Decode.andThen
                 (\name ->
-                    if name == "_tag" then
+                    if name == "_id" then
                         Json.Decode.at [ "type", "literal" ] Json.Decode.string
-                            |> Json.Decode.map (\literal -> Name literal)
+                            |> Json.Decode.map (\literal -> TypeName literal)
+
+                    else if name == "_tag" then
+                        Json.Decode.at [ "type", "literal" ] Json.Decode.string
+                            |> Json.Decode.map (\literal -> VariantName literal)
 
                     else
                         Json.Decode.fail "Not the _tag property"
@@ -980,16 +871,6 @@ decodeLiteralHelper =
             (Json.Decode.at [ "type" ] decodeAST)
         ]
         |> Json.Decode.list
-
-
-
-{-
-   ▄    ▄ ▄▄▄▄▄▄ ▄      ▄▄▄▄▄  ▄▄▄▄▄▄ ▄▄▄▄▄   ▄▄▄▄
-   █    █ █      █      █   ▀█ █      █   ▀█ █▀   ▀
-   █▄▄▄▄█ █▄▄▄▄▄ █      █▄▄▄█▀ █▄▄▄▄▄ █▄▄▄▄▀ ▀█▄▄▄
-   █    █ █      █      █      █      █   ▀▄     ▀█
-   █    █ █▄▄▄▄▄ █▄▄▄▄▄ █      █▄▄▄▄▄ █    ▀ ▀▄▄▄█▀
--}
 
 
 reservedList : Set String
