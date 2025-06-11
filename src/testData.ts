@@ -1,3 +1,4 @@
+import { Schema } from "effect";
 import * as Data from "./Data.js";
 
 export const mySchemas = {
@@ -50,4 +51,16 @@ export const mySchemas = {
     }),
     j: Data.Float,
   }),
+  myCustomType: Data.CustomType(
+    "MyNewType",
+    {
+      _tag: Schema.Literal("two"),
+      one: Data.Char,
+    },
+    {
+      _tag: Schema.Literal("two"),
+      two: Data.String,
+      val: Data.Char,
+    },
+  ),
 };

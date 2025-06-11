@@ -9,6 +9,11 @@ type alias MyChar =
     Char.Char
 
 
+type MyNewType
+    = Two Char.Char
+    | Two String Char.Char
+
+
 type alias MyFloat =
     Float
 

@@ -27,6 +27,53 @@ myCharDecoder =
         Json.Decode.string
 
 
+myCustomTypeDecoder : Json.Decode.Decoder Generated.EffectTypes.MyCustomType
+myCustomTypeDecoder =
+    Json.Decode.oneOf
+        [ Json.Decode.Extra.andMap
+            (Json.Decode.field
+               "one"
+               (Json.Decode.andThen
+                  (\andThenUnpack ->
+                     case String.uncons andThenUnpack of
+                         Nothing ->
+                             Json.Decode.fail "Not a Char"
+
+                         Just ( char, "" ) ->
+                             Json.Decode.succeed char
+
+                         _ ->
+                             Json.Decode.fail "Not a Char"
+                  )
+                  Json.Decode.string
+               )
+            )
+            (Json.Decode.succeed Generated.EffectTypes.Two)
+        , Json.Decode.Extra.andMap
+            (Json.Decode.field
+               "val"
+               (Json.Decode.andThen
+                  (\andThenUnpack ->
+                     case String.uncons andThenUnpack of
+                         Nothing ->
+                             Json.Decode.fail "Not a Char"
+
+                         Just ( char, "" ) ->
+                             Json.Decode.succeed char
+
+                         _ ->
+                             Json.Decode.fail "Not a Char"
+                  )
+                  Json.Decode.string
+               )
+            )
+            (Json.Decode.Extra.andMap
+               (Json.Decode.field "two" Json.Decode.string)
+               (Json.Decode.succeed Generated.EffectTypes.Two)
+            )
+        ]
+
+
 myFloatDecoder : Json.Decode.Decoder Generated.EffectTypes.MyFloat
 myFloatDecoder =
     Json.Decode.float

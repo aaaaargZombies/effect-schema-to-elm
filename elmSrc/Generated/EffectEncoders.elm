@@ -14,6 +14,20 @@ myCharEncoder arg =
     Json.Encode.string (String.fromChar arg)
 
 
+myCustomTypeEncoder : Generated.EffectTypes.MyCustomType -> Json.Encode.Value
+myCustomTypeEncoder arg =
+    case arg of
+        Generated.EffectTypes.Two one ->
+            Json.Encode.object
+                [ ( "one", Json.Encode.string (String.fromChar one) ) ]
+
+        Generated.EffectTypes.Two two val ->
+            Json.Encode.object
+                [ ( "two", Json.Encode.string two )
+                , ( "val", Json.Encode.string (String.fromChar val) )
+                ]
+
+
 myFloatEncoder : Generated.EffectTypes.MyFloat -> Json.Encode.Value
 myFloatEncoder =
     Json.Encode.float

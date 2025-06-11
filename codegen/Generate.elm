@@ -337,10 +337,41 @@ astToEncoder ast =
         Char_ ->
             \arg -> Gen.Json.Encode.call_.string (Gen.String.call_.fromChar arg)
 
+        -- \myRecord ->
+        --     Gen.Json.Encode.object
+        --         (List.map (\( name, ast_ ) -> Elm.tuple (Elm.string name) (astToEncoder ast_ (Elm.get name myRecord))) listOf)
         CustomType customTypeName variants ->
             \arg ->
-                -- Elm.Case.custom arg (Type.named [ "Generated", "EffectTypes" ] "TODO!!!")
-                Debug.todo "TODO"
+                Elm.Case.custom arg
+                    (Type.named [ "Generated", "EffectTypes" ] customTypeName)
+                    (List.map
+                        (\( variantName, params ) ->
+                            let
+                                params_ =
+                                    Dict.toList params
+                            in
+                            Elm.Case.branch
+                                -- (Arg.customType variantName identity
+                                --     |> Arg.item (Arg.var "val")
+                                -- )
+                                (Elm.Arg.customType variantName identity
+                                    -- |> Elm.Arg.items (List.indexedMap (\i _ -> Elm.Arg.var ("arg" ++ String.fromInt i)) args)
+                                    |> Elm.Arg.items
+                                        (params_
+                                            |> List.map (\( fieldName, _ ) -> Elm.Arg.var fieldName)
+                                        )
+                                )
+                                (\args ->
+                                    Gen.Json.Encode.object
+                                        (List.map2
+                                            (\( fieldName, type_ ) arg_ -> Elm.tuple (Elm.string fieldName) (astToEncoder type_ arg_))
+                                            params_
+                                            args
+                                        )
+                                )
+                        )
+                        variants
+                    )
 
         Float_ ->
             Gen.Json.Encode.call_.float
