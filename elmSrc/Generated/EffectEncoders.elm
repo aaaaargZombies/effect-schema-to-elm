@@ -14,10 +14,10 @@ myCharEncoder arg =
     Json.Encode.string (String.fromChar arg)
 
 
-myCustomTypeEncoder : Generated.EffectTypes.MyCustomType -> Json.Encode.Value
+myCustomTypeEncoder : Generated.EffectTypes.MyNewType -> Json.Encode.Value
 myCustomTypeEncoder arg =
     case arg of
-        Generated.EffectTypes.Two one ->
+        Generated.EffectTypes.One one ->
             Json.Encode.object
                 [ ( "one", Json.Encode.string (String.fromChar one) ) ]
 

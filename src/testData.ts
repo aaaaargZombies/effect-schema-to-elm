@@ -54,7 +54,7 @@ export const mySchemas = {
   myCustomType: Data.CustomType(
     "MyNewType",
     {
-      _tag: Schema.Literal("two"),
+      _tag: Schema.Literal("one"),
       one: Data.Char,
     },
     {

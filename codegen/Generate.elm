@@ -88,12 +88,6 @@ generate schemas =
     ]
 
 
-astToDecoderDeclaration : ( String, AST ) -> Elm.Declaration
-astToDecoderDeclaration ( name, ast ) =
-    Elm.declaration (name ++ "Decoder")
-        (Elm.withType (Gen.Json.Decode.annotation_.decoder (Type.named [ "Generated", "EffectTypes" ] name)) (astToDecoder ast))
-
-
 astToTypeDeclaration : ( String, AST ) -> Elm.Declaration
 astToTypeDeclaration ( name, ast ) =
     let
@@ -122,12 +116,30 @@ astToTypeDeclaration ( name, ast ) =
                 (astToAnnotation ast)
 
 
+namedType : ( String, AST ) -> Type.Annotation
+namedType decodedAstPair =
+    case decodedAstPair of
+        ( _, CustomType name _ ) ->
+            Type.named [ "Generated", "EffectTypes" ] name
+
+        ( name, _ ) ->
+            Type.named [ "Generated", "EffectTypes" ] name
+
+
 astToEncoderDeclaration : ( String, AST ) -> Elm.Declaration
 astToEncoderDeclaration ( name, ast ) =
     Elm.declaration (name ++ "Encoder")
         (Elm.withType
-            (Type.function [ Type.named [ "Generated", "EffectTypes" ] name ] Gen.Json.Encode.annotation_.value)
+            (Type.function [ namedType ( name, ast ) ] Gen.Json.Encode.annotation_.value)
             (Elm.functionReduced "arg" (\arg -> astToEncoder ast arg))
+        )
+
+
+astToDecoderDeclaration : ( String, AST ) -> Elm.Declaration
+astToDecoderDeclaration ( name, ast ) =
+    Elm.declaration (name ++ "Decoder")
+        (Elm.withType (Gen.Json.Decode.annotation_.decoder (namedType ( name, ast )))
+            (astToDecoder ast)
         )
 
 
@@ -174,7 +186,6 @@ astToDecoder ast =
                     )
 
         CustomType customTypeName variants ->
-            -- TODO new AST type
             Gen.Json.Decode.oneOf
                 (List.map
                     (\( name_, params ) ->
@@ -187,9 +198,6 @@ astToDecoder ast =
                                 Gen.Json.Decode.Extra.andMap (Gen.Json.Decode.field name__ (astToDecoder ast_)) expression
                             )
                             (Gen.Json.Decode.succeed
-                                -- can I use this
-                                -- https://package.elm-lang.org/packages/mdgriffith/elm-codegen/latest/Elm#value
-                                -- to get the tupe constructor and use it as the accumulator for my fold
                                 (Elm.value
                                     { importFrom = [ "Generated", "EffectTypes" ]
                                     , name = safeTypeName name_
@@ -337,9 +345,6 @@ astToEncoder ast =
         Char_ ->
             \arg -> Gen.Json.Encode.call_.string (Gen.String.call_.fromChar arg)
 
-        -- \myRecord ->
-        --     Gen.Json.Encode.object
-        --         (List.map (\( name, ast_ ) -> Elm.tuple (Elm.string name) (astToEncoder ast_ (Elm.get name myRecord))) listOf)
         CustomType customTypeName variants ->
             \arg ->
                 Elm.Case.custom arg
@@ -351,11 +356,7 @@ astToEncoder ast =
                                     Dict.toList params
                             in
                             Elm.Case.branch
-                                -- (Arg.customType variantName identity
-                                --     |> Arg.item (Arg.var "val")
-                                -- )
                                 (Elm.Arg.customType variantName identity
-                                    -- |> Elm.Arg.items (List.indexedMap (\i _ -> Elm.Arg.var ("arg" ++ String.fromInt i)) args)
                                     |> Elm.Arg.items
                                         (params_
                                             |> List.map (\( fieldName, _ ) -> Elm.Arg.var fieldName)

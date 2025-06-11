@@ -10,7 +10,7 @@ type alias MyChar =
 
 
 type MyNewType
-    = Two Char.Char
+    = One Char.Char
     | Two String Char.Char
 
 
