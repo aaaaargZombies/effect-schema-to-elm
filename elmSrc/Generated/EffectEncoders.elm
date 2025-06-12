@@ -28,6 +28,49 @@ myNewTypeEncoder arg =
                 ]
 
 
+myNewTypeTwoEncoder : Generated.EffectTypes.MyNewTypeTwo -> Json.Encode.Value
+myNewTypeTwoEncoder arg =
+    case arg of
+        Generated.EffectTypes.A a ->
+            Json.Encode.object [ ( "a", Json.Encode.string a ) ]
+
+        Generated.EffectTypes.B a ->
+            Json.Encode.object [ ( "a", Json.Encode.int a ) ]
+
+        Generated.EffectTypes.C a b c d ->
+            Json.Encode.object
+                [ ( "a", Json.Encode.int a )
+                , ( "b", Json.Encode.int b )
+                , ( "c", Json.Encode.string c )
+                , ( "d"
+                  , Json.Encode.list
+                        (\arg0 ->
+                             case arg0 of
+                                 Ok ok ->
+                                     Json.Encode.object
+                                         [ ( "_id"
+                                           , Json.Encode.string "Either"
+                                           )
+                                         , ( "_tag"
+                                           , Json.Encode.string "Right"
+                                           )
+                                         , ( "right", Json.Encode.int ok )
+                                         ]
+
+                                 Err err ->
+                                     Json.Encode.object
+                                         [ ( "_id"
+                                           , Json.Encode.string "Either"
+                                           )
+                                         , ( "_tag", Json.Encode.string "Left" )
+                                         , ( "left", Json.Encode.string err )
+                                         ]
+                        )
+                        d
+                  )
+                ]
+
+
 myFloatEncoder : Generated.EffectTypes.MyFloat -> Json.Encode.Value
 myFloatEncoder =
     Json.Encode.float
@@ -181,6 +224,79 @@ myRecordLongEncoder arg =
         , ( "h", Json.Encode.string (String.fromChar arg.h) )
         , ( "i", Json.Encode.string (String.fromChar arg.i) )
         , ( "j", Json.Encode.string (String.fromChar arg.j) )
+        ]
+
+
+myRecordWithCustomTypeEncoder :
+    Generated.EffectTypes.MyRecordWithCustomType -> Json.Encode.Value
+myRecordWithCustomTypeEncoder arg =
+    Json.Encode.object
+        [ ( "a"
+          , case arg.a of
+                Generated.EffectTypes.A a ->
+                    Json.Encode.object [ ( "a", Json.Encode.string a ) ]
+
+                Generated.EffectTypes.B a ->
+                    Json.Encode.object [ ( "a", Json.Encode.int a ) ]
+
+                Generated.EffectTypes.C a b c d ->
+                    Json.Encode.object
+                        [ ( "a", Json.Encode.int a )
+                        , ( "b", Json.Encode.int b )
+                        , ( "c", Json.Encode.string c )
+                        , ( "d"
+                          , Json.Encode.list
+                                (\arg0 ->
+                                     case arg0 of
+                                         Ok ok ->
+                                             Json.Encode.object
+                                                 [ ( "_id"
+                                                   , Json.Encode.string "Either"
+                                                   )
+                                                 , ( "_tag"
+                                                   , Json.Encode.string "Right"
+                                                   )
+                                                 , ( "right"
+                                                   , Json.Encode.int ok
+                                                   )
+                                                 ]
+
+                                         Err err ->
+                                             Json.Encode.object
+                                                 [ ( "_id"
+                                                   , Json.Encode.string "Either"
+                                                   )
+                                                 , ( "_tag"
+                                                   , Json.Encode.string "Left"
+                                                   )
+                                                 , ( "left"
+                                                   , Json.Encode.string err
+                                                   )
+                                                 ]
+                                )
+                                d
+                          )
+                        ]
+          )
+        , ( "b"
+          , Json.Encode.list
+                (\arg0 ->
+                     case arg0 of
+                         Nothing ->
+                             Json.Encode.object
+                                 [ ( "_id", Json.Encode.string "Option" )
+                                 , ( "_tag", Json.Encode.string "None" )
+                                 ]
+
+                         Just value ->
+                             Json.Encode.object
+                                 [ ( "_id", Json.Encode.string "Option" )
+                                 , ( "_tag", Json.Encode.string "Some" )
+                                 , ( "value", Json.Encode.float value )
+                                 ]
+                )
+                arg.b
+          )
         ]
 
 

@@ -74,6 +74,70 @@ myNewTypeDecoder =
         ]
 
 
+myNewTypeTwoDecoder : Json.Decode.Decoder Generated.EffectTypes.MyNewTypeTwo
+myNewTypeTwoDecoder =
+    Json.Decode.oneOf
+        [ Json.Decode.Extra.andMap
+            (Json.Decode.field "a" Json.Decode.string)
+            (Json.Decode.succeed Generated.EffectTypes.A)
+        , Json.Decode.Extra.andMap
+            (Json.Decode.field "a" Json.Decode.int)
+            (Json.Decode.succeed Generated.EffectTypes.B)
+        , Json.Decode.Extra.andMap
+            (Json.Decode.field
+               "d"
+               (Json.Decode.list
+                  (Json.Decode.oneOf
+                     [ Json.Decode.andThen
+                           (\andThenUnpack ->
+                                if Tuple.first andThenUnpack == "Right" then
+                                    Json.Decode.succeed
+                                        (Result.Ok (Tuple.second andThenUnpack))
+
+                                else
+                                    Json.Decode.fail "Not a Ok"
+                           )
+                           (Json.Decode.map2
+                                (\map2Unpack ->
+                                     \unpack -> ( map2Unpack, unpack )
+                                )
+                                (Json.Decode.field "_tag" Json.Decode.string)
+                                (Json.Decode.field "right" Json.Decode.int)
+                           )
+                     , Json.Decode.andThen
+                           (\andThenUnpack ->
+                                if Tuple.first andThenUnpack == "Left" then
+                                    Json.Decode.succeed
+                                        (Result.Err (Tuple.second andThenUnpack)
+                                        )
+
+                                else
+                                    Json.Decode.fail "Not a Err"
+                           )
+                           (Json.Decode.map2
+                                (\map2Unpack ->
+                                     \unpack -> ( map2Unpack, unpack )
+                                )
+                                (Json.Decode.field "_tag" Json.Decode.string)
+                                (Json.Decode.field "left" Json.Decode.string)
+                           )
+                     ]
+                  )
+               )
+            )
+            (Json.Decode.Extra.andMap
+               (Json.Decode.field "c" Json.Decode.string)
+               (Json.Decode.Extra.andMap
+                  (Json.Decode.field "b" Json.Decode.int)
+                  (Json.Decode.Extra.andMap
+                     (Json.Decode.field "a" Json.Decode.int)
+                     (Json.Decode.succeed Generated.EffectTypes.C)
+                  )
+               )
+            )
+        ]
+
+
 myFloatDecoder : Json.Decode.Decoder Generated.EffectTypes.MyFloat
 myFloatDecoder =
     Json.Decode.float
@@ -810,6 +874,138 @@ myRecordLongDecoder =
                        )
                   )
              )
+        )
+
+
+myRecordWithCustomTypeDecoder :
+    Json.Decode.Decoder Generated.EffectTypes.MyRecordWithCustomType
+myRecordWithCustomTypeDecoder =
+    Json.Decode.Extra.andMap
+        (Json.Decode.field
+             "b"
+             (Json.Decode.list
+                  (Json.Decode.oneOf
+                       [ Json.Decode.andThen
+                           (\andThenUnpack ->
+                              if Tuple.first andThenUnpack == "Some" then
+                                  Json.Decode.succeed
+                                      (Just (Tuple.second andThenUnpack))
+
+                              else
+                                  Json.Decode.fail "Not a Just"
+                           )
+                           (Json.Decode.map2
+                              (\map2Unpack -> \unpack -> ( map2Unpack, unpack ))
+                              (Json.Decode.field "_tag" Json.Decode.string)
+                              (Json.Decode.field "value" Json.Decode.float)
+                           )
+                       , Json.Decode.andThen
+                           (\andThenUnpack ->
+                              if andThenUnpack == "None" then
+                                  Json.Decode.succeed Nothing
+
+                              else
+                                  Json.Decode.fail "Not a Nothing"
+                           )
+                           (Json.Decode.field "_tag" Json.Decode.string)
+                       ]
+                  )
+             )
+        )
+        (Json.Decode.Extra.andMap
+             (Json.Decode.field
+                  "a"
+                  (Json.Decode.oneOf
+                       [ Json.Decode.Extra.andMap
+                           (Json.Decode.field "a" Json.Decode.string)
+                           (Json.Decode.succeed Generated.EffectTypes.A)
+                       , Json.Decode.Extra.andMap
+                           (Json.Decode.field "a" Json.Decode.int)
+                           (Json.Decode.succeed Generated.EffectTypes.B)
+                       , Json.Decode.Extra.andMap
+                           (Json.Decode.field
+                              "d"
+                              (Json.Decode.list
+                                 (Json.Decode.oneOf
+                                    [ Json.Decode.andThen
+                                          (\andThenUnpack ->
+                                               if
+                                                   Tuple.first
+                                                       andThenUnpack == "Right"
+                                               then
+                                                   Json.Decode.succeed
+                                                       (Result.Ok
+                                                            (Tuple.second
+                                                                 andThenUnpack
+                                                            )
+                                                       )
+
+                                               else
+                                                   Json.Decode.fail "Not a Ok"
+                                          )
+                                          (Json.Decode.map2
+                                               (\map2Unpack ->
+                                                    \unpack ->
+                                                        ( map2Unpack, unpack )
+                                               )
+                                               (Json.Decode.field
+                                                    "_tag"
+                                                    Json.Decode.string
+                                               )
+                                               (Json.Decode.field
+                                                    "right"
+                                                    Json.Decode.int
+                                               )
+                                          )
+                                    , Json.Decode.andThen
+                                          (\andThenUnpack ->
+                                               if
+                                                   Tuple.first
+                                                       andThenUnpack == "Left"
+                                               then
+                                                   Json.Decode.succeed
+                                                       (Result.Err
+                                                            (Tuple.second
+                                                                 andThenUnpack
+                                                            )
+                                                       )
+
+                                               else
+                                                   Json.Decode.fail "Not a Err"
+                                          )
+                                          (Json.Decode.map2
+                                               (\map2Unpack ->
+                                                    \unpack ->
+                                                        ( map2Unpack, unpack )
+                                               )
+                                               (Json.Decode.field
+                                                    "_tag"
+                                                    Json.Decode.string
+                                               )
+                                               (Json.Decode.field
+                                                    "left"
+                                                    Json.Decode.string
+                                               )
+                                          )
+                                    ]
+                                 )
+                              )
+                           )
+                           (Json.Decode.Extra.andMap
+                              (Json.Decode.field "c" Json.Decode.string)
+                              (Json.Decode.Extra.andMap
+                                 (Json.Decode.field "b" Json.Decode.int)
+                                 (Json.Decode.Extra.andMap
+                                    (Json.Decode.field "a" Json.Decode.int)
+                                    (Json.Decode.succeed Generated.EffectTypes.C
+                                    )
+                                 )
+                              )
+                           )
+                       ]
+                  )
+             )
+             (Json.Decode.succeed (\a b -> { a = a, b = b }))
         )
 
 

@@ -481,7 +481,7 @@ astToAnnotation ast =
             Type.char
 
         CustomType customTypeName _ ->
-            Type.named [ "Generated", "EffectTypes" ] (safeTypeName customTypeName)
+            Type.named [] (safeTypeName customTypeName)
 
         Float_ ->
             Type.float

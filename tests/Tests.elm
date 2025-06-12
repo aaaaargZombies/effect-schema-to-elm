@@ -44,6 +44,7 @@ suite =
             , decoderTestHelper "Record decoder 10 Char entries" TestData.myRecordLongJson EffectDecoders.myRecordLongDecoder
             , decoderTestHelper "Record Complex decoder" TestData.myRecordComplexJson EffectDecoders.myRecordComplexDecoder
             , decoderTestHelper "Custom Type decoder" TestData.myCustomTypeJson EffectDecoders.myNewTypeDecoder
+            , decoderTestHelper "Record with a Custom Type decoder" TestData.myRecordWithCustomTypeJson EffectDecoders.myRecordWithCustomTypeDecoder
             ]
         , Test.describe "generated encoders vs Effect arbitraries"
             [ encoderTestHelper "Bool decoder" TestData.myBoolJson EffectDecoders.myBoolDecoder EffectEncoders.myBoolEncoder
@@ -59,5 +60,6 @@ suite =
             , encoderTestHelper "Record decoder 10 Char entries" TestData.myRecordLongJson EffectDecoders.myRecordLongDecoder EffectEncoders.myRecordLongEncoder
             , encoderTestHelper "Record Complex decoder" TestData.myRecordComplexJson EffectDecoders.myRecordComplexDecoder EffectEncoders.myRecordComplexEncoder
             , encoderTestHelper "Custom Type decoder" TestData.myCustomTypeJson EffectDecoders.myNewTypeDecoder EffectEncoders.myNewTypeEncoder
+            , encoderTestHelper "Record with a Custom Type decoder" TestData.myRecordWithCustomTypeJson EffectDecoders.myRecordWithCustomTypeDecoder EffectEncoders.myRecordWithCustomTypeEncoder
             ]
         ]

@@ -1,6 +1,38 @@
 import { Schema } from "effect";
 import * as Data from "./Data.js";
 
+const customType = Data.CustomType(
+  "MyNewType",
+  {
+    _tag: Schema.Literal("one"),
+    one: Data.Char,
+  },
+  {
+    _tag: Schema.Literal("two"),
+    two: Data.String,
+    val: Data.Char,
+  },
+);
+
+const customType2 = Data.CustomType(
+  "MyNewTypeTwo",
+  {
+    _tag: Schema.Literal("a"),
+    a: Data.String,
+  },
+  {
+    _tag: Schema.Literal("b"),
+    a: Data.Int,
+  },
+  {
+    _tag: Schema.Literal("c"),
+    a: Data.Int,
+    b: Data.Int,
+    c: Data.String,
+    d: Data.List(Data.Result({ error: Data.String, value: Data.Int })),
+  },
+);
+
 export const mySchemas = {
   myBool: Data.Bool,
   myChar: Data.Char,
@@ -51,16 +83,10 @@ export const mySchemas = {
     }),
     j: Data.Float,
   }),
-  myCustomType: Data.CustomType(
-    "MyNewType",
-    {
-      _tag: Schema.Literal("one"),
-      one: Data.Char,
-    },
-    {
-      _tag: Schema.Literal("two"),
-      two: Data.String,
-      val: Data.Char,
-    },
-  ),
+  myCustomType: customType,
+  myCustomTypeLonger: customType2,
+  myRecordWithCustomType: Data.Record({
+    a: customType2,
+    b: Data.List(Data.Maybe(Data.Float)),
+  }),
 };

@@ -14,6 +14,12 @@ type MyNewType
     | Two String Char.Char
 
 
+type MyNewTypeTwo
+    = A String
+    | B Int
+    | C Int Int String (List (Result String Int))
+
+
 type alias MyFloat =
     Float
 
@@ -60,6 +66,10 @@ type alias MyRecordLong =
     , i : Char.Char
     , j : Char.Char
     }
+
+
+type alias MyRecordWithCustomType =
+    { a : MyNewTypeTwo, b : List (Maybe Float) }
 
 
 type alias MyResult =
