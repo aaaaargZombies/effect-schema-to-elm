@@ -27,8 +27,8 @@ myCharDecoder =
         Json.Decode.string
 
 
-myCustomTypeDecoder : Json.Decode.Decoder Generated.EffectTypes.MyNewType
-myCustomTypeDecoder =
+myNewTypeDecoder : Json.Decode.Decoder Generated.EffectTypes.MyNewType
+myNewTypeDecoder =
     Json.Decode.oneOf
         [ Json.Decode.Extra.andMap
             (Json.Decode.field

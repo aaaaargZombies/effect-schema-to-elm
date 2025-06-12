@@ -120,25 +120,35 @@ namedType : ( String, AST ) -> Type.Annotation
 namedType decodedAstPair =
     case decodedAstPair of
         ( _, CustomType name _ ) ->
-            Type.named [ "Generated", "EffectTypes" ] name
+            Type.named [ "Generated", "EffectTypes" ] (safeTypeName name)
 
         ( name, _ ) ->
-            Type.named [ "Generated", "EffectTypes" ] name
+            Type.named [ "Generated", "EffectTypes" ] (safeTypeName name)
+
+
+declarationName : ( String, AST ) -> String
+declarationName decodedAstPair =
+    case decodedAstPair of
+        ( _, CustomType name _ ) ->
+            safeValueName name
+
+        ( name, _ ) ->
+            safeValueName name
 
 
 astToEncoderDeclaration : ( String, AST ) -> Elm.Declaration
-astToEncoderDeclaration ( name, ast ) =
-    Elm.declaration (name ++ "Encoder")
+astToEncoderDeclaration (( name, ast ) as pair) =
+    Elm.declaration (declarationName pair ++ "Encoder")
         (Elm.withType
-            (Type.function [ namedType ( name, ast ) ] Gen.Json.Encode.annotation_.value)
+            (Type.function [ namedType pair ] Gen.Json.Encode.annotation_.value)
             (Elm.functionReduced "arg" (\arg -> astToEncoder ast arg))
         )
 
 
 astToDecoderDeclaration : ( String, AST ) -> Elm.Declaration
-astToDecoderDeclaration ( name, ast ) =
-    Elm.declaration (name ++ "Decoder")
-        (Elm.withType (Gen.Json.Decode.annotation_.decoder (namedType ( name, ast )))
+astToDecoderDeclaration (( name, ast ) as pair) =
+    Elm.declaration (declarationName pair ++ "Decoder")
+        (Elm.withType (Gen.Json.Decode.annotation_.decoder (namedType pair))
             (astToDecoder ast)
         )
 

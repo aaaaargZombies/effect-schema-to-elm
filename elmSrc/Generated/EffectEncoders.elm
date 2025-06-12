@@ -14,8 +14,8 @@ myCharEncoder arg =
     Json.Encode.string (String.fromChar arg)
 
 
-myCustomTypeEncoder : Generated.EffectTypes.MyNewType -> Json.Encode.Value
-myCustomTypeEncoder arg =
+myNewTypeEncoder : Generated.EffectTypes.MyNewType -> Json.Encode.Value
+myNewTypeEncoder arg =
     case arg of
         Generated.EffectTypes.One one ->
             Json.Encode.object
