@@ -89,4 +89,5 @@ export const mySchemas = {
     a: customType2,
     b: Data.List(Data.Maybe(Data.Float)),
   }),
+  myDict: Data.Dict({ key: Data.String, value: Data.Int }),
 };

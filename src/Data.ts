@@ -85,12 +85,11 @@ export const ArrayInt = Array(Int);
 
 // Dict
 export const Dict = (args: { key: Comparable; value: Schema.Schema.Any }) =>
-  Schema.Map({ key: args.key, value: args.value });
-export const MapStringInt = Dict({ key: String, value: Int }).pipe(
-  Schema.annotations({
-    [ElmType]: "Dict",
-  }),
-);
+  Schema.HashMap({ key: args.key, value: args.value }).pipe(
+    Schema.annotations({
+      [ElmType]: "Dict",
+    }),
+  );
 
 // List
 export const List = (s: Schema.Schema.Any) =>

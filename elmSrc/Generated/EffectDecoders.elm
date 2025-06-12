@@ -1,5 +1,6 @@
 module Generated.EffectDecoders exposing (..)
 
+import Dict
 import Generated.EffectTypes
 import Json.Decode
 import Json.Decode.Extra
@@ -136,6 +137,22 @@ myNewTypeTwoDecoder =
                )
             )
         ]
+
+
+myDictDecoder : Json.Decode.Decoder Generated.EffectTypes.MyDict
+myDictDecoder =
+    Json.Decode.map
+        Dict.fromList
+        (Json.Decode.at
+             [ "values" ]
+             (Json.Decode.list
+                  (Json.Decode.map2
+                       Tuple.pair
+                       (Json.Decode.index 0 Json.Decode.string)
+                       (Json.Decode.index 1 Json.Decode.int)
+                  )
+             )
+        )
 
 
 myFloatDecoder : Json.Decode.Decoder Generated.EffectTypes.MyFloat

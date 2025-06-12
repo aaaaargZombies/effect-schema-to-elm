@@ -5,11 +5,7 @@ import * as Utils from "./utils.js";
 // pipe(Data.Maybe(Data.String).ast, JSON.stringify, console.log);
 // pipe(Data.Maybe(Data.String).ast, JSON.stringify, console.log);
 pipe(
-  Data.CustomType(
-    "myCustomType",
-    { _tag: Schema.Literal("one"), one: Data.String },
-    { _tag: Schema.Literal("two"), two: Data.Char },
-  ),
+  Data.Dict({ key: Data.String, value: Data.Int }),
   Utils.fuzz(5),
   JSON.stringify,
   console.log,

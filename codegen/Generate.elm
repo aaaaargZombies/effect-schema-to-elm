@@ -9,9 +9,11 @@ import Elm.Arg
 import Elm.Case
 import Elm.Op
 import Gen.CodeGen.Generate as Generate
+import Gen.Dict
 import Gen.Json.Decode
 import Gen.Json.Decode.Extra
 import Gen.Json.Encode
+import Gen.List
 import Gen.String
 import Gen.Tuple
 import Json.Decode
@@ -31,6 +33,7 @@ import Set exposing (Set)
 type AST
     = Bool_
     | Char_
+    | Dict_ Comparable AST
     | Float_
     | Int_
     | String_
@@ -39,6 +42,68 @@ type AST
     | Result_ AST AST
     | Record_ (Dict String AST)
     | CustomType String (List ( String, Dict String AST ))
+
+
+
+-- comparable permits Int, Float, Char, String, and lists/tuples of comparable values
+
+
+type Comparable
+    = Bool__
+    | Char__
+    | Float__
+    | Int__
+    | String__
+    | List__ Comparable
+
+
+astToComparable : AST -> Maybe Comparable
+astToComparable a =
+    case a of
+        Bool_ ->
+            Just <| Bool__
+
+        Char_ ->
+            Just <| Char__
+
+        Float_ ->
+            Just <| Float__
+
+        Int_ ->
+            Just <| Int__
+
+        String_ ->
+            Just <| String__
+
+        List_ ast ->
+            ast
+                |> astToComparable
+                |> Maybe.map List__
+
+        _ ->
+            Nothing
+
+
+comparableToAst : Comparable -> AST
+comparableToAst c =
+    case c of
+        Bool__ ->
+            Bool_
+
+        Char__ ->
+            Char_
+
+        Float__ ->
+            Float_
+
+        Int__ ->
+            Int_
+
+        String__ ->
+            String_
+
+        List__ ast ->
+            List_ <| comparableToAst ast
 
 
 type alias Name =
@@ -114,16 +179,6 @@ astToTypeDeclaration ( name, ast ) =
         _ ->
             Elm.alias typeName
                 (astToAnnotation ast)
-
-
-namedType : ( String, AST ) -> Type.Annotation
-namedType decodedAstPair =
-    case decodedAstPair of
-        ( _, CustomType name _ ) ->
-            Type.named [ "Generated", "EffectTypes" ] (safeTypeName name)
-
-        ( name, _ ) ->
-            Type.named [ "Generated", "EffectTypes" ] (safeTypeName name)
 
 
 declarationName : ( String, AST ) -> String
@@ -225,6 +280,18 @@ astToDecoder ast =
 
         Int_ ->
             Gen.Json.Decode.int
+
+        Dict_ key val ->
+            -- not sure about this use of call_
+            Gen.Json.Decode.map Gen.Dict.call_.fromList
+                (Gen.Json.Decode.at [ "values" ]
+                    (Gen.Json.Decode.list
+                        (Gen.Json.Decode.map2 Gen.Tuple.pair
+                            (Gen.Json.Decode.index 0 (astToDecoder (comparableToAst key)))
+                            (Gen.Json.Decode.index 1 (astToDecoder val))
+                        )
+                    )
+                )
 
         List_ ast_ ->
             Gen.Json.Decode.list (astToDecoder ast_)
@@ -393,6 +460,20 @@ astToEncoder ast =
         String_ ->
             Gen.Json.Encode.call_.string
 
+        Dict_ key val ->
+            -- { _id: "HashMap", values: [["length", -530028691]] },
+            -- https://stackoverflow.com/questions/38412720/how-to-encode-tuple-to-json-in-elm
+            \dict ->
+                dict
+                    |> Gen.Dict.toList
+                    |> Gen.List.map
+                        (Elm.fn
+                            (Elm.Arg.tuple (Elm.Arg.var "first") (Elm.Arg.var "second"))
+                            (\( first, second ) -> Gen.Json.Encode.list identity [ astToEncoder (comparableToAst key) first, astToEncoder val second ])
+                        )
+                    |> Gen.Json.Encode.list identity
+                    |> (\kvs -> Gen.Json.Encode.object [ Elm.fn (Elm.Arg.var "a") (\a -> a) ( "_id", Elm.string "HashMap" ), ( "values", kvs ) ])
+
         List_ a ->
             Gen.Json.Encode.call_.list (Elm.functionReduced "arg" (\arg -> astToEncoder a arg))
 
@@ -492,6 +573,17 @@ astToAnnotation ast =
         String_ ->
             Type.string
 
+        Dict_ key val ->
+            let
+                key_ =
+                    comparableToAst key
+            in
+            -- We do not use `Elm.Annotation.dict` here because it will NOT
+            -- result in `import Dict` being generated in the module, due to
+            -- a bug in elm-codegen.
+            -- https://github.com/mdgriffith/elm-codegen/issues/106
+            Gen.Dict.annotation_.dict (astToAnnotation key_) (astToAnnotation val)
+
         List_ a ->
             Type.list <| astToAnnotation a
 
@@ -504,6 +596,16 @@ astToAnnotation ast =
         Record_ dict ->
             Type.record
                 (dict |> Dict.toList |> List.map (Tuple.mapSecond astToAnnotation))
+
+
+namedType : ( String, AST ) -> Type.Annotation
+namedType decodedAstPair =
+    case decodedAstPair of
+        ( _, CustomType name _ ) ->
+            Type.named [ "Generated", "EffectTypes" ] (safeTypeName name)
+
+        ( name, _ ) ->
+            Type.named [ "Generated", "EffectTypes" ] (safeTypeName name)
 
 
 
@@ -534,6 +636,7 @@ decodeAST =
         , decodeResultDecleration
         , decodeRecord
         , decodeCustomType
+        , decodeDict
         ]
 
 
@@ -872,6 +975,36 @@ decodeLiteral =
 
                 else
                     Json.Decode.fail "Not a TypeLiteral"
+            )
+
+
+decodeDict : Json.Decode.Decoder AST
+decodeDict =
+    Json.Decode.at [ "annotations", "Symbol(ElmType)" ] Json.Decode.string
+        |> Json.Decode.andThen
+            (\type_ ->
+                if type_ == "Dict" then
+                    Json.Decode.map2 Tuple.pair
+                        (Json.Decode.at
+                            [ "to", "typeParameters" ]
+                            (Json.Decode.index 0 decodeAST)
+                        )
+                        (Json.Decode.at
+                            [ "to", "typeParameters" ]
+                            (Json.Decode.index 1 decodeAST)
+                        )
+                        |> Json.Decode.andThen
+                            (\( key, val ) ->
+                                case astToComparable key of
+                                    Just key_ ->
+                                        Json.Decode.succeed <| Dict_ key_ val
+
+                                    Nothing ->
+                                        Json.Decode.fail "Not a Dict"
+                            )
+
+                else
+                    Json.Decode.fail "Not a Dict"
             )
 
 

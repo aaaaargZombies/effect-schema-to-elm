@@ -1,5 +1,7 @@
 module Generated.EffectTypes exposing (..)
 
+import Dict
+
 
 type alias MyBool =
     Bool
@@ -18,6 +20,10 @@ type MyNewTypeTwo
     = A String
     | B Int
     | C Int Int String (List (Result String Int))
+
+
+type alias MyDict =
+    Dict.Dict String Int
 
 
 type alias MyFloat =

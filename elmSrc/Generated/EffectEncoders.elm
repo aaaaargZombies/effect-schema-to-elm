@@ -1,5 +1,6 @@
 module Generated.EffectEncoders exposing (..)
 
+import Dict
 import Generated.EffectTypes
 import Json.Encode
 
@@ -69,6 +70,14 @@ myNewTypeTwoEncoder arg =
                         d
                   )
                 ]
+
+
+myDictEncoder : Generated.EffectTypes.MyDict -> Json.Encode.Value
+myDictEncoder arg =
+    { _id = "HashMap"
+    , values =
+        List.map (\( first, second ) -> [ first, second ]) (Dict.toList arg)
+    }
 
 
 myFloatEncoder : Generated.EffectTypes.MyFloat -> Json.Encode.Value
