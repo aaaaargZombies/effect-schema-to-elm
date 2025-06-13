@@ -462,17 +462,21 @@ astToEncoder ast =
 
         Dict_ key val ->
             -- { _id: "HashMap", values: [["length", -530028691]] },
-            -- https://stackoverflow.com/questions/38412720/how-to-encode-tuple-to-json-in-elm
             \dict ->
                 dict
                     |> Gen.Dict.toList
-                    |> Gen.List.map
+                    |> Gen.List.call_.map
                         (Elm.fn
                             (Elm.Arg.tuple (Elm.Arg.var "first") (Elm.Arg.var "second"))
                             (\( first, second ) -> Gen.Json.Encode.list identity [ astToEncoder (comparableToAst key) first, astToEncoder val second ])
                         )
-                    |> Gen.Json.Encode.list identity
-                    |> (\kvs -> Gen.Json.Encode.object [ Elm.fn (Elm.Arg.var "a") (\a -> a) ( "_id", Elm.string "HashMap" ), ( "values", kvs ) ])
+                    |> Gen.Json.Encode.call_.list (Elm.fn (Elm.Arg.var "a") (\a -> a))
+                    |> (\kvs ->
+                            Gen.Json.Encode.object
+                                [ Elm.tuple (Elm.string "_id") (Gen.Json.Encode.call_.string (Elm.string "HashMap"))
+                                , Elm.tuple (Elm.string "values") kvs
+                                ]
+                       )
 
         List_ a ->
             Gen.Json.Encode.call_.list (Elm.functionReduced "arg" (\arg -> astToEncoder a arg))

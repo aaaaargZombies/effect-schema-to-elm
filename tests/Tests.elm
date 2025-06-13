@@ -45,6 +45,8 @@ suite =
             , decoderTestHelper "Record Complex decoder" TestData.myRecordComplexJson EffectDecoders.myRecordComplexDecoder
             , decoderTestHelper "Custom Type decoder" TestData.myCustomTypeJson EffectDecoders.myNewTypeDecoder
             , decoderTestHelper "Record with a Custom Type decoder" TestData.myRecordWithCustomTypeJson EffectDecoders.myRecordWithCustomTypeDecoder
+            , decoderTestHelper "Dict decoder" TestData.myDictJson EffectDecoders.myDictDecoder
+            , decoderTestHelper "Dict complex decoder" TestData.myComplexDictJson EffectDecoders.myComplexDictDecoder
             ]
         , Test.describe "generated encoders vs Effect arbitraries"
             [ encoderTestHelper "Bool decoder" TestData.myBoolJson EffectDecoders.myBoolDecoder EffectEncoders.myBoolEncoder
@@ -58,8 +60,10 @@ suite =
             , encoderTestHelper "Result Complex decoder" TestData.myResult_Json EffectDecoders.myResult_Decoder EffectEncoders.myResult_Encoder
             , encoderTestHelper "Record { one : Char, two : String }" TestData.myRecordJson EffectDecoders.myRecordDecoder EffectEncoders.myRecordEncoder
             , encoderTestHelper "Record decoder 10 Char entries" TestData.myRecordLongJson EffectDecoders.myRecordLongDecoder EffectEncoders.myRecordLongEncoder
-            , encoderTestHelper "Record Complex decoder" TestData.myRecordComplexJson EffectDecoders.myRecordComplexDecoder EffectEncoders.myRecordComplexEncoder
+            , encoderTestHelper "Record Complex encoder" TestData.myRecordComplexJson EffectDecoders.myRecordComplexDecoder EffectEncoders.myRecordComplexEncoder
             , encoderTestHelper "Custom Type decoder" TestData.myCustomTypeJson EffectDecoders.myNewTypeDecoder EffectEncoders.myNewTypeEncoder
-            , encoderTestHelper "Record with a Custom Type decoder" TestData.myRecordWithCustomTypeJson EffectDecoders.myRecordWithCustomTypeDecoder EffectEncoders.myRecordWithCustomTypeEncoder
+            , encoderTestHelper "Record with a Custom Type encoder" TestData.myRecordWithCustomTypeJson EffectDecoders.myRecordWithCustomTypeDecoder EffectEncoders.myRecordWithCustomTypeEncoder
+            , encoderTestHelper "Record with a Custom Type decoder" TestData.myDictJson EffectDecoders.myDictDecoder EffectEncoders.myDictEncoder
+            , encoderTestHelper "Dict complex encoder" TestData.myComplexDictJson EffectDecoders.myComplexDictDecoder EffectEncoders.myComplexDictEncoder
             ]
         ]

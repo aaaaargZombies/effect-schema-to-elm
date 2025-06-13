@@ -15,6 +15,79 @@ myCharEncoder arg =
     Json.Encode.string (String.fromChar arg)
 
 
+myComplexDictEncoder : Generated.EffectTypes.MyComplexDict -> Json.Encode.Value
+myComplexDictEncoder arg =
+    Json.Encode.object
+        [ ( "_id", Json.Encode.string "HashMap" )
+        , ( "values"
+          , Json.Encode.list
+                (\a -> a)
+                (List.map
+                     (\( first, second ) ->
+                          Json.Encode.list
+                              (\listUnpack -> listUnpack)
+                              [ Json.Encode.list Json.Encode.string first
+                              , case second of
+                                  Generated.EffectTypes.A a ->
+                                      Json.Encode.object
+                                          [ ( "a", Json.Encode.string a ) ]
+
+                                  Generated.EffectTypes.B a ->
+                                      Json.Encode.object
+                                          [ ( "a", Json.Encode.int a ) ]
+
+                                  Generated.EffectTypes.C a b c d ->
+                                      Json.Encode.object
+                                          [ ( "a", Json.Encode.int a )
+                                          , ( "b", Json.Encode.int b )
+                                          , ( "c", Json.Encode.string c )
+                                          , ( "d"
+                                            , Json.Encode.list
+                                                  (\arg0 ->
+                                                       case arg0 of
+                                                           Ok ok ->
+                                                               Json.Encode.object
+                                                                   [ ( "_id"
+                                                                     , Json.Encode.string
+                                                                           "Either"
+                                                                     )
+                                                                   , ( "_tag"
+                                                                     , Json.Encode.string
+                                                                           "Right"
+                                                                     )
+                                                                   , ( "right"
+                                                                     , Json.Encode.int
+                                                                           ok
+                                                                     )
+                                                                   ]
+
+                                                           Err err ->
+                                                               Json.Encode.object
+                                                                   [ ( "_id"
+                                                                     , Json.Encode.string
+                                                                           "Either"
+                                                                     )
+                                                                   , ( "_tag"
+                                                                     , Json.Encode.string
+                                                                           "Left"
+                                                                     )
+                                                                   , ( "left"
+                                                                     , Json.Encode.string
+                                                                           err
+                                                                     )
+                                                                   ]
+                                                  )
+                                                  d
+                                            )
+                                          ]
+                              ]
+                     )
+                     (Dict.toList arg)
+                )
+          )
+        ]
+
+
 myNewTypeEncoder : Generated.EffectTypes.MyNewType -> Json.Encode.Value
 myNewTypeEncoder arg =
     case arg of
@@ -74,10 +147,23 @@ myNewTypeTwoEncoder arg =
 
 myDictEncoder : Generated.EffectTypes.MyDict -> Json.Encode.Value
 myDictEncoder arg =
-    { _id = "HashMap"
-    , values =
-        List.map (\( first, second ) -> [ first, second ]) (Dict.toList arg)
-    }
+    Json.Encode.object
+        [ ( "_id", Json.Encode.string "HashMap" )
+        , ( "values"
+          , Json.Encode.list
+                (\a -> a)
+                (List.map
+                     (\( first, second ) ->
+                          Json.Encode.list
+                              (\listUnpack -> listUnpack)
+                              [ Json.Encode.string first
+                              , Json.Encode.int second
+                              ]
+                     )
+                     (Dict.toList arg)
+                )
+          )
+        ]
 
 
 myFloatEncoder : Generated.EffectTypes.MyFloat -> Json.Encode.Value

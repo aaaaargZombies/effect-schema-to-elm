@@ -11,6 +11,10 @@ type alias MyChar =
     Char.Char
 
 
+type alias MyComplexDict =
+    Dict.Dict (List String) MyNewTypeTwo
+
+
 type MyNewType
     = One Char.Char
     | Two String Char.Char
@@ -88,3 +92,4 @@ type alias MyResult_ =
 
 type alias MyString =
     String
+

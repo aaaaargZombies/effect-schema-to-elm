@@ -2,7 +2,9 @@ import { pipe, Schema } from "effect";
 
 const ElmType = Symbol.for("ElmType");
 
+// TODO better type for this
 type Comparable = typeof Char | typeof String | typeof Int | typeof Float;
+// | typeof List<Comparable>;
 
 // wanted to give these as params to things like Maybe but it seems to break!?
 // type ElmType_ =
