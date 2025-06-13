@@ -228,6 +228,45 @@ myMaybeEncoder arg =
                 ]
 
 
+myNestedDictEncoder : Generated.EffectTypes.MyNestedDict -> Json.Encode.Value
+myNestedDictEncoder arg =
+    Json.Encode.object
+        [ ( "_id", Json.Encode.string "HashMap" )
+        , ( "values"
+          , Json.Encode.list
+                (\a -> a)
+                (List.map
+                     (\keyVal ->
+                          Json.Encode.list
+                              (\listUnpack -> listUnpack)
+                              [ Json.Encode.string (Tuple.first keyVal)
+                              , Json.Encode.object
+                                  [ ( "_id", Json.Encode.string "HashMap" )
+                                  , ( "values"
+                                    , Json.Encode.list
+                                        (\a -> a)
+                                        (List.map
+                                           (\keyVal ->
+                                              Json.Encode.list
+                                                  (\listUnpack -> listUnpack)
+                                                  [ Json.Encode.string
+                                                      (Tuple.first keyVal)
+                                                  , Json.Encode.int
+                                                      (Tuple.second keyVal)
+                                                  ]
+                                           )
+                                           (Dict.toList (Tuple.second keyVal))
+                                        )
+                                    )
+                                  ]
+                              ]
+                     )
+                     (Dict.toList arg)
+                )
+          )
+        ]
+
+
 myNestedTupleEncoder : Generated.EffectTypes.MyNestedTuple -> Json.Encode.Value
 myNestedTupleEncoder arg =
     Json.Encode.list

@@ -351,6 +351,43 @@ myMaybeDecoder =
         ]
 
 
+myNestedDictDecoder : Json.Decode.Decoder Generated.EffectTypes.MyNestedDict
+myNestedDictDecoder =
+    Json.Decode.map
+        Dict.fromList
+        (Json.Decode.at
+             [ "values" ]
+             (Json.Decode.list
+                  (Json.Decode.map2
+                       Tuple.pair
+                       (Json.Decode.index 0 Json.Decode.string)
+                       (Json.Decode.index
+                            1
+                            (Json.Decode.map
+                                 Dict.fromList
+                                 (Json.Decode.at
+                                      [ "values" ]
+                                      (Json.Decode.list
+                                           (Json.Decode.map2
+                                                Tuple.pair
+                                                (Json.Decode.index
+                                                     0
+                                                     Json.Decode.string
+                                                )
+                                                (Json.Decode.index
+                                                     1
+                                                     Json.Decode.int
+                                                )
+                                           )
+                                      )
+                                 )
+                            )
+                       )
+                  )
+             )
+        )
+
+
 myNestedTupleDecoder : Json.Decode.Decoder Generated.EffectTypes.MyNestedTuple
 myNestedTupleDecoder =
     Json.Decode.map2

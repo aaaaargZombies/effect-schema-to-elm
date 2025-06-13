@@ -97,4 +97,8 @@ export const mySchemas = {
     value: Data.Int,
   }),
   myNestedTuple: Data.Tuple2(Data.Char, Data.Tuple2(Data.Char, Data.Bool)),
+  myNestedDict: Data.Dict({
+    key: Data.String,
+    value: Data.Dict({ key: Data.String, value: Data.Int }),
+  }),
 };

@@ -487,6 +487,9 @@ astToEncoder ast =
                     |> Gen.Dict.toList
                     |> Gen.List.call_.map
                         (Elm.fn
+                            -- TODO
+                            -- this breaks on nested dicts - maybe need to make a function I call elsewhere???
+                            -- or use the tuple2_ encoder???
                             (Elm.Arg.var "keyVal")
                             (\keyVal ->
                                 Gen.Json.Encode.list identity
@@ -674,6 +677,7 @@ decodeAST =
         , decodeRecord
         , decodeCustomType
         , decodeDict
+        , decodeDictDeclaration
         , decodeTuple2
         ]
 
@@ -1040,6 +1044,39 @@ decodeDict =
                                     Nothing ->
                                         Json.Decode.fail "Not a Dict"
                             )
+
+                else
+                    Json.Decode.fail "Not a Dict"
+            )
+
+
+decodeDictDeclaration : Json.Decode.Decoder AST
+decodeDictDeclaration =
+    Json.Decode.map2 Tuple.pair
+        (Json.Decode.at
+            [ "annotations", "Symbol(effect/annotation/Description)" ]
+            Json.Decode.string
+        )
+        (Json.Decode.at
+            [ "typeParameters" ]
+            (Json.Decode.lazy
+                (\_ -> Json.Decode.list decodeAST)
+            )
+        )
+        |> Json.Decode.andThen
+            (\( description, asts ) ->
+                if String.startsWith "HashMap" description then
+                    case asts of
+                        [ key, value ] ->
+                            case astToComparable key of
+                                Just key_ ->
+                                    Json.Decode.succeed <| Dict_ key_ value
+
+                                Nothing ->
+                                    Json.Decode.fail "Dict key not Comparable"
+
+                        _ ->
+                            Json.Decode.fail "Failed to decode type param"
 
                 else
                     Json.Decode.fail "Not a Dict"

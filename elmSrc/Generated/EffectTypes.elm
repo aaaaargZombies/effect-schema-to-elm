@@ -50,6 +50,10 @@ type alias MyMaybe =
     Maybe Int
 
 
+type alias MyNestedDict =
+    Dict.Dict String (Dict.Dict String Int)
+
+
 type alias MyNestedTuple =
     ( Char.Char, ( Char.Char, Bool ) )
 
