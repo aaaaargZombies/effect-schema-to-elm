@@ -91,4 +91,10 @@ export const mySchemas = {
   }),
   myDict: Data.Dict({ key: Data.String, value: Data.Int }),
   myComplexDict: Data.Dict({ key: Data.List(Data.String), value: customType2 }),
+  myTuple: Data.Tuple2(Data.String, Data.Float),
+  myKeyTupleDict: Data.Dict({
+    key: Data.Tuple2(Data.String, Data.Float),
+    value: Data.Int,
+  }),
+  myNestedTuple: Data.Tuple2(Data.Char, Data.Tuple2(Data.Char, Data.Bool)),
 };

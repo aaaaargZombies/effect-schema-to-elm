@@ -38,12 +38,20 @@ type alias MyInt =
     Int
 
 
+type alias MyKeyTupleDict =
+    Dict.Dict ( String, Float ) Int
+
+
 type alias MyList =
     List String
 
 
 type alias MyMaybe =
     Maybe Int
+
+
+type alias MyNestedTuple =
+    ( Char.Char, ( Char.Char, Bool ) )
 
 
 type alias MyRecord =
@@ -93,3 +101,6 @@ type alias MyResult_ =
 type alias MyString =
     String
 
+
+type alias MyTuple =
+    ( String, Float )

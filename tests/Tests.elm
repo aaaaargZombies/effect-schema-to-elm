@@ -47,6 +47,9 @@ suite =
             , decoderTestHelper "Record with a Custom Type decoder" TestData.myRecordWithCustomTypeJson EffectDecoders.myRecordWithCustomTypeDecoder
             , decoderTestHelper "Dict decoder" TestData.myDictJson EffectDecoders.myDictDecoder
             , decoderTestHelper "Dict complex decoder" TestData.myComplexDictJson EffectDecoders.myComplexDictDecoder
+            , decoderTestHelper "Tuple decoder" TestData.myTupleJson EffectDecoders.myTupleDecoder
+            , decoderTestHelper "Dict with Tuple key decoder" TestData.myKeyTupleDictJson EffectDecoders.myKeyTupleDictDecoder
+            , decoderTestHelper "nested Tuple decoder" TestData.myNestedTupleJson EffectDecoders.myNestedTupleDecoder
             ]
         , Test.describe "generated encoders vs Effect arbitraries"
             [ encoderTestHelper "Bool decoder" TestData.myBoolJson EffectDecoders.myBoolDecoder EffectEncoders.myBoolEncoder
@@ -65,5 +68,8 @@ suite =
             , encoderTestHelper "Record with a Custom Type encoder" TestData.myRecordWithCustomTypeJson EffectDecoders.myRecordWithCustomTypeDecoder EffectEncoders.myRecordWithCustomTypeEncoder
             , encoderTestHelper "Record with a Custom Type decoder" TestData.myDictJson EffectDecoders.myDictDecoder EffectEncoders.myDictEncoder
             , encoderTestHelper "Dict complex encoder" TestData.myComplexDictJson EffectDecoders.myComplexDictDecoder EffectEncoders.myComplexDictEncoder
+            , encoderTestHelper "Tuple encoder" TestData.myTupleJson EffectDecoders.myTupleDecoder EffectEncoders.myTupleEncoder
+            , encoderTestHelper "Dict with Tuple key decoder" TestData.myKeyTupleDictJson EffectDecoders.myKeyTupleDictDecoder EffectEncoders.myKeyTupleDictEncoder
+            , encoderTestHelper "nested Tuple encoder" TestData.myNestedTupleJson EffectDecoders.myNestedTupleDecoder EffectEncoders.myNestedTupleEncoder
             ]
         ]

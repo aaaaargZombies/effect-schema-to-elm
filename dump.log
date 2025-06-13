@@ -1,0 +1,4 @@
+
+> @template/cli@0.0.0 generate /home/unicorn/projects/effect-schema-to-elm
+> tsx src/generate.ts
+

@@ -176,6 +176,32 @@ myIntEncoder =
     Json.Encode.int
 
 
+myKeyTupleDictEncoder :
+    Generated.EffectTypes.MyKeyTupleDict -> Json.Encode.Value
+myKeyTupleDictEncoder arg =
+    Json.Encode.object
+        [ ( "_id", Json.Encode.string "HashMap" )
+        , ( "values"
+          , Json.Encode.list
+                (\a -> a)
+                (List.map
+                     (\( first, second ) ->
+                          Json.Encode.list
+                              (\listUnpack -> listUnpack)
+                              [ Json.Encode.list
+                                  (\listUnpack -> listUnpack)
+                                  [ Json.Encode.string (Tuple.first first)
+                                  , Json.Encode.float (Tuple.second first)
+                                  ]
+                              , Json.Encode.int second
+                              ]
+                     )
+                     (Dict.toList arg)
+                )
+          )
+        ]
+
+
 myListEncoder : Generated.EffectTypes.MyList -> Json.Encode.Value
 myListEncoder =
     Json.Encode.list Json.Encode.string
@@ -196,6 +222,20 @@ myMaybeEncoder arg =
                 , ( "_tag", Json.Encode.string "Some" )
                 , ( "value", Json.Encode.int value )
                 ]
+
+
+myNestedTupleEncoder : Generated.EffectTypes.MyNestedTuple -> Json.Encode.Value
+myNestedTupleEncoder arg =
+    Json.Encode.list
+        (\listUnpack -> listUnpack)
+        [ Json.Encode.string (String.fromChar (Tuple.first arg))
+        , Json.Encode.list
+            (\listUnpack -> listUnpack)
+            [ Json.Encode.string
+                  (String.fromChar (Tuple.first (Tuple.second arg)))
+            , Json.Encode.bool (Tuple.second (Tuple.second arg))
+            ]
+        ]
 
 
 myRecordEncoder : Generated.EffectTypes.MyRecord -> Json.Encode.Value
@@ -450,3 +490,12 @@ myResult_Encoder arg =
 myStringEncoder : Generated.EffectTypes.MyString -> Json.Encode.Value
 myStringEncoder =
     Json.Encode.string
+
+
+myTupleEncoder : Generated.EffectTypes.MyTuple -> Json.Encode.Value
+myTupleEncoder arg =
+    Json.Encode.list
+        (\listUnpack -> listUnpack)
+        [ Json.Encode.string (Tuple.first arg)
+        , Json.Encode.float (Tuple.second arg)
+        ]

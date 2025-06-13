@@ -7,6 +7,7 @@ import Elm exposing (Expression)
 import Elm.Annotation as Type
 import Elm.Arg
 import Elm.Case
+import Elm.Declare
 import Elm.Op
 import Gen.CodeGen.Generate as Generate
 import Gen.Dict
@@ -41,6 +42,7 @@ type AST
     | Maybe_ AST
     | Result_ AST AST
     | Record_ (Dict String AST)
+    | Tuple2_ AST AST
     | CustomType String (List ( String, Dict String AST ))
 
 
@@ -55,6 +57,7 @@ type Comparable
     | Int__
     | String__
     | List__ Comparable
+    | Tuple2__ Comparable Comparable
 
 
 astToComparable : AST -> Maybe Comparable
@@ -80,6 +83,16 @@ astToComparable a =
                 |> astToComparable
                 |> Maybe.map List__
 
+        Tuple2_ left right ->
+            let
+                left_ =
+                    astToComparable left
+
+                right_ =
+                    astToComparable right
+            in
+            Maybe.map2 Tuple2__ left_ right_
+
         _ ->
             Nothing
 
@@ -104,6 +117,9 @@ comparableToAst c =
 
         List__ ast ->
             List_ <| comparableToAst ast
+
+        Tuple2__ left right ->
+            Tuple2_ (comparableToAst left) (comparableToAst right)
 
 
 type alias Name =
@@ -402,6 +418,11 @@ astToDecoder ast =
         String_ ->
             Gen.Json.Decode.string
 
+        Tuple2_ a b ->
+            Gen.Json.Decode.map2 Gen.Tuple.pair
+                (Gen.Json.Decode.index 0 (astToDecoder a))
+                (Gen.Json.Decode.index 1 (astToDecoder b))
+
 
 
 {-
@@ -545,6 +566,10 @@ astToEncoder ast =
                 Gen.Json.Encode.object
                     (List.map (\( name, ast_ ) -> Elm.tuple (Elm.string name) (astToEncoder ast_ (Elm.get name myRecord))) listOf)
 
+        Tuple2_ a b ->
+            \arg ->
+                Gen.Json.Encode.list identity [ astToEncoder a (Gen.Tuple.first arg), astToEncoder b (Gen.Tuple.second arg) ]
+
 
 
 {-
@@ -597,6 +622,9 @@ astToAnnotation ast =
         Result_ err ok ->
             Type.result (astToAnnotation err) (astToAnnotation ok)
 
+        Tuple2_ a b ->
+            Type.tuple (astToAnnotation a) (astToAnnotation b)
+
         Record_ dict ->
             Type.record
                 (dict |> Dict.toList |> List.map (Tuple.mapSecond astToAnnotation))
@@ -641,6 +669,7 @@ decodeAST =
         , decodeRecord
         , decodeCustomType
         , decodeDict
+        , decodeTuple2
         ]
 
 
@@ -1009,6 +1038,23 @@ decodeDict =
 
                 else
                     Json.Decode.fail "Not a Dict"
+            )
+
+
+decodeTuple2 : Json.Decode.Decoder AST
+decodeTuple2 =
+    Json.Decode.at [ "annotations", "Symbol(ElmType)" ] Json.Decode.string
+        |> Json.Decode.andThen
+            (\type_ ->
+                if type_ == "Tuple2" then
+                    Json.Decode.map2 Tuple.pair
+                        (Json.Decode.at [ "elements" ] (Json.Decode.index 0 (Json.Decode.at [ "type" ] decodeAST)))
+                        (Json.Decode.at [ "elements" ] (Json.Decode.index 1 (Json.Decode.at [ "type" ] decodeAST)))
+                        |> Json.Decode.andThen
+                            (\( a, b ) -> Json.Decode.succeed <| Tuple2_ a b)
+
+                else
+                    Json.Decode.fail "Not a Tuple2"
             )
 
 

@@ -136,13 +136,22 @@ export const Set_ = (a: Schema.Schema.Any) => Schema.Set(a);
 
 // Tuple
 export const Tuple2 = (a: Schema.Schema.Any, b: Schema.Schema.Any) =>
-  Schema.Tuple(a, b);
-export const Tuple2vals = Tuple2(String, Int);
+  Schema.Tuple(a, b).pipe(
+    Schema.annotations({
+      [ElmType]: "Tuple2",
+    }),
+  );
+
 export const Tuple3 = (
   a: Schema.Schema.Any,
   b: Schema.Schema.Any,
   c: Schema.Schema.Any,
-) => Schema.Tuple(a, b, c);
+) =>
+  Schema.Tuple(a, b, c).pipe(
+    Schema.annotations({
+      [ElmType]: "Tuple3",
+    }),
+  );
 export const Tuple3vals = Tuple3(String, Int, String);
 
 // Unit
