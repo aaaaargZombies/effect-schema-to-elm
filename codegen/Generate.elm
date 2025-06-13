@@ -488,8 +488,14 @@ astToEncoder ast =
                     |> Gen.Dict.toList
                     |> Gen.List.call_.map
                         (Elm.fn
-                            (Elm.Arg.tuple (Elm.Arg.var "first") (Elm.Arg.var "second"))
-                            (\( first, second ) -> Gen.Json.Encode.list identity [ astToEncoder (comparableToAst key) first, astToEncoder val second ])
+                            (Elm.Arg.var "keyVal")
+                            (\keyVal ->
+                                Gen.Json.Encode.list identity
+                                    [ astToEncoder (comparableToAst key)
+                                        (Gen.Tuple.first keyVal)
+                                    , astToEncoder val (Gen.Tuple.second keyVal)
+                                    ]
+                            )
                         )
                     |> Gen.Json.Encode.call_.list (Elm.fn (Elm.Arg.var "a") (\a -> a))
                     |> (\kvs ->
