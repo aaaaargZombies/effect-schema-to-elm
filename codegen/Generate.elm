@@ -7,7 +7,6 @@ import Elm exposing (Expression)
 import Elm.Annotation as Type
 import Elm.Arg
 import Elm.Case
-import Elm.Declare
 import Elm.Op
 import Gen.CodeGen.Generate as Generate
 import Gen.Dict
