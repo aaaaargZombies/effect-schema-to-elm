@@ -15,9 +15,11 @@ import Gen.Json.Decode.Extra
 import Gen.Json.Encode
 import Gen.List
 import Gen.String
+import Gen.Triple.Extra
 import Gen.Tuple
 import Json.Decode
 import Set exposing (Set)
+import Triple.Extra
 
 
 
@@ -42,6 +44,7 @@ type AST
     | Result_ AST AST
     | Record_ (Dict String AST)
     | Tuple2_ AST AST
+    | Tuple3_ AST AST AST
     | CustomType String (List ( String, Dict String AST ))
 
 
@@ -57,68 +60,7 @@ type Comparable
     | String__
     | List__ Comparable
     | Tuple2__ Comparable Comparable
-
-
-astToComparable : AST -> Maybe Comparable
-astToComparable a =
-    case a of
-        Bool_ ->
-            Just <| Bool__
-
-        Char_ ->
-            Just <| Char__
-
-        Float_ ->
-            Just <| Float__
-
-        Int_ ->
-            Just <| Int__
-
-        String_ ->
-            Just <| String__
-
-        List_ ast ->
-            ast
-                |> astToComparable
-                |> Maybe.map List__
-
-        Tuple2_ left right ->
-            let
-                left_ =
-                    astToComparable left
-
-                right_ =
-                    astToComparable right
-            in
-            Maybe.map2 Tuple2__ left_ right_
-
-        _ ->
-            Nothing
-
-
-comparableToAst : Comparable -> AST
-comparableToAst c =
-    case c of
-        Bool__ ->
-            Bool_
-
-        Char__ ->
-            Char_
-
-        Float__ ->
-            Float_
-
-        Int__ ->
-            Int_
-
-        String__ ->
-            String_
-
-        List__ ast ->
-            List_ <| comparableToAst ast
-
-        Tuple2__ left right ->
-            Tuple2_ (comparableToAst left) (comparableToAst right)
+    | Tuple3__ Comparable Comparable Comparable
 
 
 type alias Name =
@@ -216,7 +158,7 @@ astToEncoderDeclaration (( _, ast ) as pair) =
 
 
 astToDecoderDeclaration : ( String, AST ) -> Elm.Declaration
-astToDecoderDeclaration (( name, ast ) as pair) =
+astToDecoderDeclaration (( _, ast ) as pair) =
     Elm.declaration (declarationName pair ++ "Decoder")
         (Elm.withType (Gen.Json.Decode.annotation_.decoder (namedType pair))
             (astToDecoder ast)
@@ -422,6 +364,12 @@ astToDecoder ast =
                 (Gen.Json.Decode.index 0 (astToDecoder a))
                 (Gen.Json.Decode.index 1 (astToDecoder b))
 
+        Tuple3_ a b c ->
+            Gen.Json.Decode.map3 Gen.Triple.Extra.triple
+                (Gen.Json.Decode.index 0 (astToDecoder a))
+                (Gen.Json.Decode.index 1 (astToDecoder b))
+                (Gen.Json.Decode.index 2 (astToDecoder c))
+
 
 
 {-
@@ -585,6 +533,15 @@ astToEncoderInternal depth ast =
             \arg ->
                 Gen.Json.Encode.list identity [ astToEncoder_ a (Gen.Tuple.first arg), astToEncoder_ b (Gen.Tuple.second arg) ]
 
+        Tuple3_ a b c ->
+            \arg ->
+                Gen.Json.Encode.list
+                    identity
+                    [ astToEncoder_ a (Gen.Triple.Extra.first arg)
+                    , astToEncoder_ b (Gen.Triple.Extra.second arg)
+                    , astToEncoder_ c (Gen.Triple.Extra.third arg)
+                    ]
+
 
 
 {-
@@ -640,6 +597,9 @@ astToAnnotation ast =
         Tuple2_ a b ->
             Type.tuple (astToAnnotation a) (astToAnnotation b)
 
+        Tuple3_ a b c ->
+            Gen.Triple.Extra.annotation_.triple (astToAnnotation a) (astToAnnotation b) (astToAnnotation c)
+
         Record_ dict ->
             Type.record
                 (dict |> Dict.toList |> List.map (Tuple.mapSecond astToAnnotation))
@@ -686,6 +646,7 @@ decodeAST =
         , decodeDict
         , decodeDictDeclaration
         , decodeTuple2
+        , decodeTuple3
         ]
 
 
@@ -1107,6 +1068,24 @@ decodeTuple2 =
             )
 
 
+decodeTuple3 : Json.Decode.Decoder AST
+decodeTuple3 =
+    Json.Decode.at [ "annotations", "Symbol(ElmType)" ] Json.Decode.string
+        |> Json.Decode.andThen
+            (\type_ ->
+                if type_ == "Tuple3" then
+                    Json.Decode.map3 Triple.Extra.triple
+                        (Json.Decode.at [ "elements" ] (Json.Decode.index 0 (Json.Decode.at [ "type" ] decodeAST)))
+                        (Json.Decode.at [ "elements" ] (Json.Decode.index 1 (Json.Decode.at [ "type" ] decodeAST)))
+                        (Json.Decode.at [ "elements" ] (Json.Decode.index 2 (Json.Decode.at [ "type" ] decodeAST)))
+                        |> Json.Decode.andThen
+                            (\( a, b, c ) -> Json.Decode.succeed <| Tuple3_ a b c)
+
+                else
+                    Json.Decode.fail "Not a Tuple3"
+            )
+
+
 
 {-
    ▄    ▄ ▄▄▄▄▄▄ ▄      ▄▄▄▄▄  ▄▄▄▄▄▄ ▄▄▄▄▄   ▄▄▄▄
@@ -1216,3 +1195,81 @@ safeTypeName s =
 safeValueName : String -> String
 safeValueName s =
     s |> clean |> decapitalize
+
+
+astToComparable : AST -> Maybe Comparable
+astToComparable a =
+    case a of
+        Bool_ ->
+            Just <| Bool__
+
+        Char_ ->
+            Just <| Char__
+
+        Float_ ->
+            Just <| Float__
+
+        Int_ ->
+            Just <| Int__
+
+        String_ ->
+            Just <| String__
+
+        List_ ast ->
+            ast
+                |> astToComparable
+                |> Maybe.map List__
+
+        Tuple2_ left right ->
+            let
+                left_ =
+                    astToComparable left
+
+                right_ =
+                    astToComparable right
+            in
+            Maybe.map2 Tuple2__ left_ right_
+
+        Tuple3_ left middle right ->
+            let
+                left_ =
+                    astToComparable left
+
+                middle_ =
+                    astToComparable middle
+
+                right_ =
+                    astToComparable right
+            in
+            Maybe.map3 Tuple3__ left_ middle_ right_
+
+        _ ->
+            Nothing
+
+
+comparableToAst : Comparable -> AST
+comparableToAst c =
+    case c of
+        Bool__ ->
+            Bool_
+
+        Char__ ->
+            Char_
+
+        Float__ ->
+            Float_
+
+        Int__ ->
+            Int_
+
+        String__ ->
+            String_
+
+        List__ ast ->
+            List_ <| comparableToAst ast
+
+        Tuple2__ left right ->
+            Tuple2_ (comparableToAst left) (comparableToAst right)
+
+        Tuple3__ left middle right ->
+            Tuple3_ (comparableToAst left) (comparableToAst middle) (comparableToAst right)

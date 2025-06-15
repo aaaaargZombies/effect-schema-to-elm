@@ -101,4 +101,5 @@ export const mySchemas = {
     key: Data.String,
     value: Data.Dict({ key: Data.String, value: Data.Int }),
   }),
+  myTriple: Data.Tuple3(Data.Bool, Data.Bool, Data.String),
 };

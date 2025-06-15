@@ -51,6 +51,7 @@ suite =
             , decoderTestHelper "Dict with Tuple key decoder" TestData.myKeyTupleDictJson EffectDecoders.myKeyTupleDictDecoder
             , decoderTestHelper "nested Tuple decoder" TestData.myNestedTupleJson EffectDecoders.myNestedTupleDecoder
             , decoderTestHelper "nested Dict decoder" TestData.myNestedDictJson EffectDecoders.myNestedDictDecoder
+            , decoderTestHelper "Triple decoder" TestData.myTripleJson EffectDecoders.myTripleDecoder
             ]
         , Test.describe "generated encoders vs Effect arbitraries"
             [ encoderTestHelper "Bool decoder" TestData.myBoolJson EffectDecoders.myBoolDecoder EffectEncoders.myBoolEncoder
@@ -73,5 +74,6 @@ suite =
             , encoderTestHelper "Dict with Tuple key decoder" TestData.myKeyTupleDictJson EffectDecoders.myKeyTupleDictDecoder EffectEncoders.myKeyTupleDictEncoder
             , encoderTestHelper "nested Tuple encoder" TestData.myNestedTupleJson EffectDecoders.myNestedTupleDecoder EffectEncoders.myNestedTupleEncoder
             , encoderTestHelper "nested Dict encoder" TestData.myNestedDictJson EffectDecoders.myNestedDictDecoder EffectEncoders.myNestedDictEncoder
+            , encoderTestHelper "Triple encoder" TestData.myTripleJson EffectDecoders.myTripleDecoder EffectEncoders.myTripleEncoder
             ]
         ]

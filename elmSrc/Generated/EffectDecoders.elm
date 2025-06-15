@@ -4,6 +4,7 @@ import Dict
 import Generated.EffectTypes
 import Json.Decode
 import Json.Decode.Extra
+import Triple.Extra
 
 
 myBoolDecoder : Json.Decode.Decoder Generated.EffectTypes.MyBool
@@ -1347,6 +1348,15 @@ myResult_Decoder =
 myStringDecoder : Json.Decode.Decoder Generated.EffectTypes.MyString
 myStringDecoder =
     Json.Decode.string
+
+
+myTripleDecoder : Json.Decode.Decoder Generated.EffectTypes.MyTriple
+myTripleDecoder =
+    Json.Decode.map3
+        Triple.Extra.triple
+        (Json.Decode.index 0 Json.Decode.bool)
+        (Json.Decode.index 1 Json.Decode.bool)
+        (Json.Decode.index 2 Json.Decode.string)
 
 
 myTupleDecoder : Json.Decode.Decoder Generated.EffectTypes.MyTuple

@@ -12,4 +12,4 @@ const show = (a) => pipe(a, (a) => a.ast, JSON.stringify, console.log);
 //   }),
 // );
 
-show(Data.Dict({ key: Data.String, value: Data.Int }));
+show(Data.Tuple3(Data.Bool, Data.Bool, Data.String));

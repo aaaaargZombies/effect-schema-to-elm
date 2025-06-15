@@ -3,6 +3,7 @@ module Generated.EffectEncoders exposing (..)
 import Dict
 import Generated.EffectTypes
 import Json.Encode
+import Triple.Extra
 
 
 myBoolEncoder : Generated.EffectTypes.MyBool -> Json.Encode.Value
@@ -533,6 +534,16 @@ myResult_Encoder arg =
 myStringEncoder : Generated.EffectTypes.MyString -> Json.Encode.Value
 myStringEncoder =
     Json.Encode.string
+
+
+myTripleEncoder : Generated.EffectTypes.MyTriple -> Json.Encode.Value
+myTripleEncoder arg =
+    Json.Encode.list
+        (\listUnpack -> listUnpack)
+        [ Json.Encode.bool (Triple.Extra.first arg)
+        , Json.Encode.bool (Triple.Extra.second arg)
+        , Json.Encode.string (Triple.Extra.third arg)
+        ]
 
 
 myTupleEncoder : Generated.EffectTypes.MyTuple -> Json.Encode.Value

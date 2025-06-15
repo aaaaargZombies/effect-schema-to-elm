@@ -1,6 +1,7 @@
 module Generated.EffectTypes exposing (..)
 
 import Dict
+import Triple.Extra
 
 
 type alias MyBool =
@@ -104,6 +105,10 @@ type alias MyResult_ =
 
 type alias MyString =
     String
+
+
+type alias MyTriple =
+    Triple.Extra.Triple Bool Bool String
 
 
 type alias MyTuple =
