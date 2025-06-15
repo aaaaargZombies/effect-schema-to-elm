@@ -23,13 +23,13 @@ myComplexDictEncoder arg =
           , Json.Encode.list
                 (\a -> a)
                 (List.map
-                     (\keyVal ->
+                     (\keyVal0 ->
                           Json.Encode.list
                               (\listUnpack -> listUnpack)
                               [ Json.Encode.list
                                   Json.Encode.string
-                                  (Tuple.first keyVal)
-                              , case Tuple.second keyVal of
+                                  (Tuple.first keyVal0)
+                              , case Tuple.second keyVal0 of
                                   Generated.EffectTypes.A a ->
                                       Json.Encode.object
                                           [ ( "a", Json.Encode.string a ) ]
@@ -155,11 +155,11 @@ myDictEncoder arg =
           , Json.Encode.list
                 (\a -> a)
                 (List.map
-                     (\keyVal ->
+                     (\keyVal0 ->
                           Json.Encode.list
                               (\listUnpack -> listUnpack)
-                              [ Json.Encode.string (Tuple.first keyVal)
-                              , Json.Encode.int (Tuple.second keyVal)
+                              [ Json.Encode.string (Tuple.first keyVal0)
+                              , Json.Encode.int (Tuple.second keyVal0)
                               ]
                      )
                      (Dict.toList arg)
@@ -187,17 +187,17 @@ myKeyTupleDictEncoder arg =
           , Json.Encode.list
                 (\a -> a)
                 (List.map
-                     (\keyVal ->
+                     (\keyVal0 ->
                           Json.Encode.list
                               (\listUnpack -> listUnpack)
                               [ Json.Encode.list
                                   (\listUnpack -> listUnpack)
                                   [ Json.Encode.string
-                                        (Tuple.first (Tuple.first keyVal))
+                                        (Tuple.first (Tuple.first keyVal0))
                                   , Json.Encode.float
-                                        (Tuple.second (Tuple.first keyVal))
+                                        (Tuple.second (Tuple.first keyVal0))
                                   ]
-                              , Json.Encode.int (Tuple.second keyVal)
+                              , Json.Encode.int (Tuple.second keyVal0)
                               ]
                      )
                      (Dict.toList arg)
@@ -236,26 +236,26 @@ myNestedDictEncoder arg =
           , Json.Encode.list
                 (\a -> a)
                 (List.map
-                     (\keyVal ->
+                     (\keyVal0 ->
                           Json.Encode.list
                               (\listUnpack -> listUnpack)
-                              [ Json.Encode.string (Tuple.first keyVal)
+                              [ Json.Encode.string (Tuple.first keyVal0)
                               , Json.Encode.object
                                   [ ( "_id", Json.Encode.string "HashMap" )
                                   , ( "values"
                                     , Json.Encode.list
                                         (\a -> a)
                                         (List.map
-                                           (\keyVal ->
+                                           (\keyVal1 ->
                                               Json.Encode.list
                                                   (\listUnpack -> listUnpack)
                                                   [ Json.Encode.string
-                                                      (Tuple.first keyVal)
+                                                      (Tuple.first keyVal1)
                                                   , Json.Encode.int
-                                                      (Tuple.second keyVal)
+                                                      (Tuple.second keyVal1)
                                                   ]
                                            )
-                                           (Dict.toList (Tuple.second keyVal))
+                                           (Dict.toList (Tuple.second keyVal0))
                                         )
                                     )
                                   ]
@@ -271,7 +271,7 @@ myNestedTupleEncoder : Generated.EffectTypes.MyNestedTuple -> Json.Encode.Value
 myNestedTupleEncoder arg =
     Json.Encode.list
         (\listUnpack -> listUnpack)
-        [ Json.Encode.string (String.fromChar (Tuple.first arg))
+        [ Json.Encode.int (Tuple.first arg)
         , Json.Encode.list
             (\listUnpack -> listUnpack)
             [ Json.Encode.string

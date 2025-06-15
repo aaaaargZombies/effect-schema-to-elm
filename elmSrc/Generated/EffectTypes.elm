@@ -55,7 +55,7 @@ type alias MyNestedDict =
 
 
 type alias MyNestedTuple =
-    ( Char.Char, ( Char.Char, Bool ) )
+    ( Int, ( Char.Char, Bool ) )
 
 
 type alias MyRecord =

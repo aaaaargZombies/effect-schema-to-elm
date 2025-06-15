@@ -211,7 +211,7 @@ astToEncoderDeclaration (( name, ast ) as pair) =
     Elm.declaration (declarationName pair ++ "Encoder")
         (Elm.withType
             (Type.function [ namedType pair ] Gen.Json.Encode.annotation_.value)
-            (Elm.functionReduced "arg" (\arg -> astToEncoder ast arg))
+            (Elm.functionReduced "arg" (\arg -> astToEncoder 0 ast arg))
         )
 
 
@@ -433,8 +433,12 @@ astToDecoder ast =
 -}
 
 
-astToEncoder : AST -> (Expression -> Expression)
-astToEncoder ast =
+astToEncoder : Int -> AST -> (Expression -> Expression)
+astToEncoder depth ast =
+    let
+        astToEncoder_ =
+            astToEncoder (depth + 1)
+    in
     case ast of
         Bool_ ->
             Gen.Json.Encode.call_.bool
@@ -462,7 +466,7 @@ astToEncoder ast =
                                 (\args ->
                                     Gen.Json.Encode.object
                                         (List.map2
-                                            (\( fieldName, type_ ) arg_ -> Elm.tuple (Elm.string fieldName) (astToEncoder type_ arg_))
+                                            (\( fieldName, type_ ) arg_ -> Elm.tuple (Elm.string fieldName) (astToEncoder_ type_ arg_))
                                             params_
                                             args
                                         )
@@ -487,15 +491,13 @@ astToEncoder ast =
                     |> Gen.Dict.toList
                     |> Gen.List.call_.map
                         (Elm.fn
-                            -- TODO
-                            -- this breaks on nested dicts - maybe need to make a function I call elsewhere???
-                            -- or use the tuple2_ encoder???
-                            (Elm.Arg.var "keyVal")
+                            (Elm.Arg.var ("keyVal" ++ String.fromInt depth))
                             (\keyVal ->
                                 Gen.Json.Encode.list identity
-                                    [ astToEncoder (comparableToAst key)
+                                    [ astToEncoder_
+                                        (comparableToAst key)
                                         (Gen.Tuple.first keyVal)
-                                    , astToEncoder val (Gen.Tuple.second keyVal)
+                                    , astToEncoder_ val (Gen.Tuple.second keyVal)
                                     ]
                             )
                         )
@@ -508,12 +510,12 @@ astToEncoder ast =
                        )
 
         List_ a ->
-            Gen.Json.Encode.call_.list (Elm.functionReduced "arg" (\arg -> astToEncoder a arg))
+            Gen.Json.Encode.call_.list (Elm.functionReduced "arg" (\arg -> astToEncoder_ a arg))
 
         Maybe_ a ->
             let
                 paramEncoder =
-                    astToEncoder a
+                    astToEncoder_ a
             in
             \myMaybe ->
                 Elm.Case.maybe myMaybe
@@ -538,10 +540,10 @@ astToEncoder ast =
         Result_ errorType valueType ->
             let
                 errorEncoder =
-                    astToEncoder errorType
+                    astToEncoder_ errorType
 
                 valueEncoder =
-                    astToEncoder valueType
+                    astToEncoder_ valueType
             in
             \myResult ->
                 Elm.Case.result myResult
@@ -572,11 +574,11 @@ astToEncoder ast =
             in
             \myRecord ->
                 Gen.Json.Encode.object
-                    (List.map (\( name, ast_ ) -> Elm.tuple (Elm.string name) (astToEncoder ast_ (Elm.get name myRecord))) listOf)
+                    (List.map (\( name, ast_ ) -> Elm.tuple (Elm.string name) (astToEncoder_ ast_ (Elm.get name myRecord))) listOf)
 
         Tuple2_ a b ->
             \arg ->
-                Gen.Json.Encode.list identity [ astToEncoder a (Gen.Tuple.first arg), astToEncoder b (Gen.Tuple.second arg) ]
+                Gen.Json.Encode.list identity [ astToEncoder_ a (Gen.Tuple.first arg), astToEncoder_ b (Gen.Tuple.second arg) ]
 
 
 

@@ -392,23 +392,7 @@ myNestedTupleDecoder : Json.Decode.Decoder Generated.EffectTypes.MyNestedTuple
 myNestedTupleDecoder =
     Json.Decode.map2
         Tuple.pair
-        (Json.Decode.index
-             0
-             (Json.Decode.andThen
-                  (\andThenUnpack ->
-                       case String.uncons andThenUnpack of
-                           Nothing ->
-                               Json.Decode.fail "Not a Char"
-
-                           Just ( char, "" ) ->
-                               Json.Decode.succeed char
-
-                           _ ->
-                               Json.Decode.fail "Not a Char"
-                  )
-                  Json.Decode.string
-             )
-        )
+        (Json.Decode.index 0 Json.Decode.int)
         (Json.Decode.index
              1
              (Json.Decode.map2
