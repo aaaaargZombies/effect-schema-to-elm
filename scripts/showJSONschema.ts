@@ -1,10 +1,7 @@
 import { JSONSchema, pipe, Schema } from "effect";
 import * as Data from "../src/Data.js";
 
-// pipe(Data.Maybe(Data.String).ast, JSON.stringify, console.log);
-// pipe(Data.Maybe(Data.String).ast, JSON.stringify, console.log);
-// const show = (a) => pipe(a, (a) => a.ast, JSON.stringify, console.log);
-const show = (a) =>
+const show = (a: Schema.Schema.Any) =>
   pipe(a, (a) => JSONSchema.make(a), JSON.stringify, console.log);
 
 show(
