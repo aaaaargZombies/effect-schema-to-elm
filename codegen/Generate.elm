@@ -207,11 +207,11 @@ declarationName decodedAstPair =
 
 
 astToEncoderDeclaration : ( String, AST ) -> Elm.Declaration
-astToEncoderDeclaration (( name, ast ) as pair) =
+astToEncoderDeclaration (( _, ast ) as pair) =
     Elm.declaration (declarationName pair ++ "Encoder")
         (Elm.withType
             (Type.function [ namedType pair ] Gen.Json.Encode.annotation_.value)
-            (Elm.functionReduced "arg" (\arg -> astToEncoder 0 ast arg))
+            (Elm.functionReduced "arg" (\arg -> astToEncoder ast arg))
         )
 
 
@@ -433,11 +433,16 @@ astToDecoder ast =
 -}
 
 
-astToEncoder : Int -> AST -> (Expression -> Expression)
-astToEncoder depth ast =
+astToEncoder : AST -> (Expression -> Expression)
+astToEncoder =
+    astToEncoderInternal 0
+
+
+astToEncoderInternal : Int -> AST -> (Expression -> Expression)
+astToEncoderInternal depth ast =
     let
         astToEncoder_ =
-            astToEncoder (depth + 1)
+            astToEncoderInternal (depth + 1)
     in
     case ast of
         Bool_ ->
