@@ -16,4 +16,4 @@ node_modules/
 tmp/
 yarn-error.log
 
-scratch.json
+scratch.*

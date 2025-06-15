@@ -2,6 +2,29 @@ import { pipe, Schema } from "effect";
 
 const ElmType = Symbol.for("ElmType");
 
+// TODO better type for this
+type Comparable = typeof Char | typeof String | typeof Int | typeof Float;
+// | typeof List<Comparable>;
+
+// wanted to give these as params to things like Maybe but it seems to break!?
+// type ElmType_ =
+//   | typeof Char
+//   | typeof String
+//   | typeof Int
+//   | typeof Float
+//   | typeof Bool
+//   | typeof Array
+//   | typeof Dict
+//   | typeof List
+//   | typeof Record
+//   | typeof Result
+//   | typeof Set_
+//   | typeof Tuple2
+//   | typeof Tuple3
+//   | MaybeSchema;
+
+// type MaybeSchema = ReturnType<typeof Maybe>;
+
 /// Make some schemes as see how they map to
 /// Elm Data types
 //
@@ -49,8 +72,6 @@ export const Bool = Schema.Boolean.pipe(
   }),
 );
 
-type Comparable = typeof Char | typeof String | typeof Int | typeof Float;
-
 /// Containers
 // Array
 export const Array = (s: Schema.Schema.Any) =>
@@ -66,12 +87,11 @@ export const ArrayInt = Array(Int);
 
 // Dict
 export const Dict = (args: { key: Comparable; value: Schema.Schema.Any }) =>
-  Schema.Map({ key: args.key, value: args.value });
-export const MapStringInt = Dict({ key: String, value: Int }).pipe(
-  Schema.annotations({
-    [ElmType]: "Dict",
-  }),
-);
+  Schema.HashMap({ key: args.key, value: args.value }).pipe(
+    Schema.annotations({
+      [ElmType]: "Dict",
+    }),
+  );
 
 // List
 export const List = (s: Schema.Schema.Any) =>
@@ -89,9 +109,16 @@ export const Maybe = (s: Schema.Schema.Any) =>
     }),
   );
 
-// Record
-export const Record = (arg: { [key: string]: Schema.Schema.Any }) =>
-  Schema.Struct(arg);
+// ideall narrow the type on the key
+// this type at the moment is kinda meaningless
+export const Record = <T extends { [key: string]: Schema.Schema.Any }>(
+  arg: T,
+) =>
+  Schema.Struct(arg).pipe(
+    Schema.annotations({
+      [ElmType]: "Record",
+    }),
+  );
 
 // Result
 export const Result = (args: {
@@ -114,7 +141,6 @@ export const Tuple2 = (a: Schema.Schema.Any, b: Schema.Schema.Any) =>
       [ElmType]: "Tuple2",
     }),
   );
-export const Tuple2vals = Tuple2(String, Int);
 export const Tuple3 = (
   a: Schema.Schema.Any,
   b: Schema.Schema.Any,
@@ -125,7 +151,6 @@ export const Tuple3 = (
       [ElmType]: "Tuple3",
     }),
   );
-export const Tuple3vals = Tuple3(String, Int, String);
 
 // Unit
 export const Unit = Schema.Tuple();
@@ -136,19 +161,42 @@ export const Unit = Schema.Tuple();
 
 // TODO this needs to be better
 // kinds probables needs to be Schema.Struct{ _tag: Schema.string, data: Schama.Tuple/Array()}
-export const Type = (name: string, ...kinds: Schema.Schema.Any[]) =>
-  Schema.Struct({
-    name: Schema.Literal(name),
-    kinds: Schema.Tuple(...kinds),
-  });
+// I want it to be a union of structs where all the inner types have a `_tag` field
 
-Type("Bert", Float, Int, Unit);
+type CustomTypeVariantArg = {
+  _tag: Schema.Literal<[string]>;
+  [key: string]: Schema.Schema.Any;
+};
 
-export const Alias = (name: string, type: Schema.Schema.Any) =>
-  Schema.Struct({
-    name: Schema.Literal(name),
-    type: type,
-  });
+// TODO is this a good API for folks making a custom type?
+// how ill I decode it?
+export const CustomType = (
+  name: string,
+  kind: CustomTypeVariantArg,
+  ...kinds: CustomTypeVariantArg[]
+) => {
+  const variants = [kind, ...kinds]
+    .map((k) => ({
+      _id: Schema.Literal(name),
+      ...k,
+    }))
+    .map((k) => Schema.Struct(k));
+
+  return Schema.Union(...variants).pipe(
+    Schema.annotations({
+      [ElmType]: "CustomType",
+    }),
+  );
+};
+
+// Type("Bert", Float, Int, Unit);
+
+// Everything becomes an alias on ingesting via flags
+// export const Alias = (name: string, type: Schema.Schema.Any) =>
+//   Schema.Struct({
+//     name: Schema.Literal(name),
+//     type: type,
+//   });
 
 /// Elm platform stuff
 // Order

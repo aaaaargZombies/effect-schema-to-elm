@@ -30,3 +30,14 @@ To test the package:
 pnpm test
 ```
 
+## TODO / BUGS
+
+- Comparable TS types to match Elm types, need to have something like `List<Comparable>`
+
+```typescript
+type Comparable = typeof Char | typeof String | typeof Int | typeof Float;
+```
+
+[view code in context](https://github.com/aaaaargZombies/effect-schema-to-elm/blob/fced363fcc5cca3087accdd7f616a574710adff9/src/Data.ts#L5-L7)
+
+- check nested dict / nested list etc to see if there's shadowing issues with vars

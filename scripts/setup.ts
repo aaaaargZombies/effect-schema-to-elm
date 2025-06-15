@@ -1,27 +1,9 @@
-import * as Data from "../src/Data.js";
 import * as Utils from "./utils.js";
+import * as TestData from "../src/testData.js";
 
-const testData = [
-  // Basics
-  Data.Bool,
-  Data.Char,
-  Data.Float,
-  Data.Int,
-  Data.String,
-  // Containers
-  Data.List(Data.String),
-  Data.Maybe(Data.Int),
-  Data.Maybe(Data.Char),
-  Data.Result({ error: Data.String, value: Data.Int }),
-  Data.Result({
-    error: Data.String,
-    value: Data.Maybe(Data.List(Data.String)),
-  }),
-].map((s) => {
-  const ast = JSON.parse(JSON.stringify(s.ast));
-  const name: string = Utils.astToName(ast);
-  const data = Utils.fuzz(100)(s);
-  return ["json" + name, data];
-});
+const testData_ = Object.entries(TestData.mySchemas).map(([name, s]) => [
+  `${name}Json`,
+  Utils.fuzz(100)(s),
+]);
 
-Utils.printElm("TestData", testData);
+Utils.printElm("TestData", testData_);
