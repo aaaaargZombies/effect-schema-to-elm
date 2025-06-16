@@ -34,6 +34,17 @@ pnpm test
 
 ### Need to target `Encoded` value of the `Schema`
 
+#### approaches
+
+- set up communication between elm and ts/effect. Bit of a pain! not really sure what the best way to do it its, maybe make a little elm app with ports or something and use Vitest???
+  - [Elm program test guides](https://web.archive.org/web/20221225214211/https://elm-program-test.netlify.app/)
+  - [Elm program test API docs](https://package.elm-lang.org/packages/avh4/elm-program-test/latest)
+- generate testdata like before but using `encodeSync` to produce the correct input / output.
+  - might not need to cross the boundary for real if I can test string equality on the Elm side
+  - maybe test the encode / decode properties of my elm `Data` schemas too on the TS side
+
+#### details
+
 - Need to use elm to encode/decode to the encoded version of the Effect.Schema. Looks like the big problem here is that I'm only testing the Elm side of things. I need to test that the elm code decodes, then re-encodes it into something Effect understands.
 
 This works 🥳
