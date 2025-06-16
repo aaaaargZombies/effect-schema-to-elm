@@ -46,11 +46,7 @@ myComplexDictEncoder arg =
                                                case arg0 of
                                                    Ok ok ->
                                                        Json.Encode.object
-                                                           [ ( "_id"
-                                                             , Json.Encode.string
-                                                                   "Either"
-                                                             )
-                                                           , ( "_tag"
+                                                           [ ( "_tag"
                                                              , Json.Encode.string
                                                                    "Right"
                                                              )
@@ -62,11 +58,7 @@ myComplexDictEncoder arg =
 
                                                    Err err ->
                                                        Json.Encode.object
-                                                           [ ( "_id"
-                                                             , Json.Encode.string
-                                                                   "Either"
-                                                             )
-                                                           , ( "_tag"
+                                                           [ ( "_tag"
                                                              , Json.Encode.string
                                                                    "Left"
                                                              )
@@ -119,10 +111,7 @@ myNewTypeTwoEncoder arg =
                              case arg0 of
                                  Ok ok ->
                                      Json.Encode.object
-                                         [ ( "_id"
-                                           , Json.Encode.string "Either"
-                                           )
-                                         , ( "_tag"
+                                         [ ( "_tag"
                                            , Json.Encode.string "Right"
                                            )
                                          , ( "right", Json.Encode.int ok )
@@ -130,10 +119,7 @@ myNewTypeTwoEncoder arg =
 
                                  Err err ->
                                      Json.Encode.object
-                                         [ ( "_id"
-                                           , Json.Encode.string "Either"
-                                           )
-                                         , ( "_tag", Json.Encode.string "Left" )
+                                         [ ( "_tag", Json.Encode.string "Left" )
                                          , ( "left", Json.Encode.string err )
                                          ]
                         )
@@ -285,14 +271,12 @@ myRecordComplexEncoder arg =
           , case arg.f of
                 Ok ok ->
                     Json.Encode.object
-                        [ ( "_id", Json.Encode.string "Either" )
-                        , ( "_tag", Json.Encode.string "Right" )
+                        [ ( "_tag", Json.Encode.string "Right" )
                         , ( "right"
                           , case ok of
                                 Ok ok0 ->
                                     Json.Encode.object
-                                        [ ( "_id", Json.Encode.string "Either" )
-                                        , ( "_tag", Json.Encode.string "Right" )
+                                        [ ( "_tag", Json.Encode.string "Right" )
                                         , ( "right"
                                           , case ok0 of
                                                 Nothing ->
@@ -320,8 +304,7 @@ myRecordComplexEncoder arg =
 
                                 Err err ->
                                     Json.Encode.object
-                                        [ ( "_id", Json.Encode.string "Either" )
-                                        , ( "_tag", Json.Encode.string "Left" )
+                                        [ ( "_tag", Json.Encode.string "Left" )
                                         , ( "left", Json.Encode.string err )
                                         ]
                           )
@@ -329,8 +312,7 @@ myRecordComplexEncoder arg =
 
                 Err err ->
                     Json.Encode.object
-                        [ ( "_id", Json.Encode.string "Either" )
-                        , ( "_tag", Json.Encode.string "Left" )
+                        [ ( "_tag", Json.Encode.string "Left" )
                         , ( "left", Json.Encode.string err )
                         ]
           )
@@ -385,10 +367,7 @@ myRecordWithCustomTypeEncoder arg =
                                      case arg0 of
                                          Ok ok ->
                                              Json.Encode.object
-                                                 [ ( "_id"
-                                                   , Json.Encode.string "Either"
-                                                   )
-                                                 , ( "_tag"
+                                                 [ ( "_tag"
                                                    , Json.Encode.string "Right"
                                                    )
                                                  , ( "right"
@@ -398,10 +377,7 @@ myRecordWithCustomTypeEncoder arg =
 
                                          Err err ->
                                              Json.Encode.object
-                                                 [ ( "_id"
-                                                   , Json.Encode.string "Either"
-                                                   )
-                                                 , ( "_tag"
+                                                 [ ( "_tag"
                                                    , Json.Encode.string "Left"
                                                    )
                                                  , ( "left"
@@ -437,15 +413,13 @@ myResultEncoder arg =
     case arg of
         Ok ok ->
             Json.Encode.object
-                [ ( "_id", Json.Encode.string "Either" )
-                , ( "_tag", Json.Encode.string "Right" )
+                [ ( "_tag", Json.Encode.string "Right" )
                 , ( "right", Json.Encode.int ok )
                 ]
 
         Err err ->
             Json.Encode.object
-                [ ( "_id", Json.Encode.string "Either" )
-                , ( "_tag", Json.Encode.string "Left" )
+                [ ( "_tag", Json.Encode.string "Left" )
                 , ( "left", Json.Encode.string err )
                 ]
 
@@ -455,8 +429,7 @@ myResult_Encoder arg =
     case arg of
         Ok ok ->
             Json.Encode.object
-                [ ( "_id", Json.Encode.string "Either" )
-                , ( "_tag", Json.Encode.string "Right" )
+                [ ( "_tag", Json.Encode.string "Right" )
                 , ( "right"
                   , case ok of
                         Nothing ->
@@ -475,8 +448,7 @@ myResult_Encoder arg =
 
         Err err ->
             Json.Encode.object
-                [ ( "_id", Json.Encode.string "Either" )
-                , ( "_tag", Json.Encode.string "Left" )
+                [ ( "_tag", Json.Encode.string "Left" )
                 , ( "left", Json.Encode.string err )
                 ]
 

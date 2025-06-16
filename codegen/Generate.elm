@@ -491,19 +491,17 @@ astToEncoderInternal depth ast =
                     { ok =
                         Tuple.pair "ok" <|
                             \ok ->
-                                -- {"_id":"Either","_tag":"Right","right":-3}
+                                -- { _tag: "Right", right: 499221720 },
                                 Gen.Json.Encode.object
-                                    [ Elm.tuple (Elm.string "_id") (Gen.Json.Encode.string "Either")
-                                    , Elm.tuple (Elm.string "_tag") (Gen.Json.Encode.string "Right")
+                                    [ Elm.tuple (Elm.string "_tag") (Gen.Json.Encode.string "Right")
                                     , Elm.tuple (Elm.string "right") (valueEncoder ok)
                                     ]
                     , err =
                         Tuple.pair "err" <|
                             \err ->
-                                -- {"_id":"Either","_tag":"Left","left":""}
+                                -- { _tag: "Left", left: "57$'-`" },
                                 Gen.Json.Encode.object
-                                    [ Elm.tuple (Elm.string "_id") (Gen.Json.Encode.string "Either")
-                                    , Elm.tuple (Elm.string "_tag") (Gen.Json.Encode.string "Left")
+                                    [ Elm.tuple (Elm.string "_tag") (Gen.Json.Encode.string "Left")
                                     , Elm.tuple (Elm.string "left") (errorEncoder err)
                                     ]
                     }
