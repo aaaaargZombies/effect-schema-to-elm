@@ -255,7 +255,6 @@ astToDecoder ast =
 
         Maybe_ ast_ ->
             Gen.Json.Decode.oneOf
-                -- can I just check the tag and then decod the next bet?
                 [ Gen.Json.Decode.map2 Elm.tuple
                     (Gen.Json.Decode.field "_tag" Gen.Json.Decode.string)
                     (Gen.Json.Decode.field "value" (astToDecoder ast_))
@@ -473,18 +472,16 @@ astToEncoderInternal depth ast =
             \myMaybe ->
                 Elm.Case.maybe myMaybe
                     { nothing =
-                        -- {"_id":"Option","_tag":"None"}
+                        -- { _tag: "None" },
                         Gen.Json.Encode.object
-                            [ Elm.tuple (Elm.string "_id") (Gen.Json.Encode.string "Option")
-                            , Elm.tuple (Elm.string "_tag") (Gen.Json.Encode.string "None")
+                            [ Elm.tuple (Elm.string "_tag") (Gen.Json.Encode.string "None")
                             ]
                     , just =
                         ( "value"
                         , \content ->
-                            -- {"_id":"Option","_tag":"Some","value":-5}
+                            -- { _tag: "Some", value: 11 },
                             Gen.Json.Encode.object
-                                [ Elm.tuple (Elm.string "_id") (Gen.Json.Encode.string "Option")
-                                , Elm.tuple (Elm.string "_tag") (Gen.Json.Encode.string "Some")
+                                [ Elm.tuple (Elm.string "_tag") (Gen.Json.Encode.string "Some")
                                 , Elm.tuple (Elm.string "value") (paramEncoder content)
                                 ]
                         )

@@ -216,15 +216,11 @@ myMaybeEncoder : Generated.EffectTypes.MyMaybe -> Json.Encode.Value
 myMaybeEncoder arg =
     case arg of
         Nothing ->
-            Json.Encode.object
-                [ ( "_id", Json.Encode.string "Option" )
-                , ( "_tag", Json.Encode.string "None" )
-                ]
+            Json.Encode.object [ ( "_tag", Json.Encode.string "None" ) ]
 
         Just value ->
             Json.Encode.object
-                [ ( "_id", Json.Encode.string "Option" )
-                , ( "_tag", Json.Encode.string "Some" )
+                [ ( "_tag", Json.Encode.string "Some" )
                 , ( "value", Json.Encode.int value )
                 ]
 
@@ -303,15 +299,11 @@ myRecordComplexEncoder arg =
         , ( "c"
           , case arg.c of
                 Nothing ->
-                    Json.Encode.object
-                        [ ( "_id", Json.Encode.string "Option" )
-                        , ( "_tag", Json.Encode.string "None" )
-                        ]
+                    Json.Encode.object [ ( "_tag", Json.Encode.string "None" ) ]
 
                 Just value ->
                     Json.Encode.object
-                        [ ( "_id", Json.Encode.string "Option" )
-                        , ( "_tag", Json.Encode.string "Some" )
+                        [ ( "_tag", Json.Encode.string "Some" )
                         , ( "value", Json.Encode.int value )
                         ]
           )
@@ -333,11 +325,7 @@ myRecordComplexEncoder arg =
                                           , case ok0 of
                                                 Nothing ->
                                                     Json.Encode.object
-                                                        [ ( "_id"
-                                                          , Json.Encode.string
-                                                                "Option"
-                                                          )
-                                                        , ( "_tag"
+                                                        [ ( "_tag"
                                                           , Json.Encode.string
                                                                 "None"
                                                           )
@@ -345,11 +333,7 @@ myRecordComplexEncoder arg =
 
                                                 Just value ->
                                                     Json.Encode.object
-                                                        [ ( "_id"
-                                                          , Json.Encode.string
-                                                                "Option"
-                                                          )
-                                                        , ( "_tag"
+                                                        [ ( "_tag"
                                                           , Json.Encode.string
                                                                 "Some"
                                                           )
@@ -463,14 +447,11 @@ myRecordWithCustomTypeEncoder arg =
                      case arg0 of
                          Nothing ->
                              Json.Encode.object
-                                 [ ( "_id", Json.Encode.string "Option" )
-                                 , ( "_tag", Json.Encode.string "None" )
-                                 ]
+                                 [ ( "_tag", Json.Encode.string "None" ) ]
 
                          Just value ->
                              Json.Encode.object
-                                 [ ( "_id", Json.Encode.string "Option" )
-                                 , ( "_tag", Json.Encode.string "Some" )
+                                 [ ( "_tag", Json.Encode.string "Some" )
                                  , ( "value", Json.Encode.float value )
                                  ]
                 )
@@ -508,14 +489,11 @@ myResult_Encoder arg =
                   , case ok of
                         Nothing ->
                             Json.Encode.object
-                                [ ( "_id", Json.Encode.string "Option" )
-                                , ( "_tag", Json.Encode.string "None" )
-                                ]
+                                [ ( "_tag", Json.Encode.string "None" ) ]
 
                         Just value ->
                             Json.Encode.object
-                                [ ( "_id", Json.Encode.string "Option" )
-                                , ( "_tag", Json.Encode.string "Some" )
+                                [ ( "_tag", Json.Encode.string "Some" )
                                 , ( "value"
                                   , Json.Encode.list Json.Encode.string value
                                   )
