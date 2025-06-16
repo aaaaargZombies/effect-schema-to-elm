@@ -1,6 +1,6 @@
 # Effect CLI Application Template
 
-This template provides a solid foundation for building scalable and maintainable command-line applications with Effect. 
+This template provides a solid foundation for building scalable and maintainable command-line applications with Effect.
 
 ## Running Code
 
@@ -32,12 +32,42 @@ pnpm test
 
 ## TODO / BUGS
 
-- Comparable TS types to match Elm types, need to have something like `List<Comparable>`
+### Need to target `Encoded` value of the `Schema`
+
+- Need to use elm to encode/decode to the encoded version of the Effect.Schema. Looks like the big problem here is that I'm only testing the Elm side of things. I need to test that the elm code decodes, then re-encodes it into something Effect understands.
+
+This works 🥳
+
+```ts
+const mySchema = Data.Set_(Data.Bool);
+
+const decode = Schema.decodeUnknownSync(mySchema);
+const encode = Schema.encodeSync(mySchema);
+
+Utils.fuzz(5)(mySchema).forEach((arb) => console.log(decode(encode(arb))));
+```
+
+but this will produce a parsing error 💩
+
+```ts
+const mySchema = Data.Set_(Data.Bool);
+
+const decode = Schema.decodeUnknownSync(mySchema);
+const encode = Schema.encodeSync(mySchema);
+
+Utils.fuzz(5)(mySchema).forEach((arb) => console.log(decode(encode(arb))));
+```
+
+I expected the arbs to produce something you could consume straight away
+
+### Express `Comparable` better
+
+Ideally this would be via a Comparable TS type to match Elm types, need to have something like `List<Comparable>`
+
+Could potentially add a Schema Annotation like I have done with `"Symbol(ElmType)"`
 
 ```typescript
 type Comparable = typeof Char | typeof String | typeof Int | typeof Float;
 ```
 
 [view code in context](https://github.com/aaaaargZombies/effect-schema-to-elm/blob/fced363fcc5cca3087accdd7f616a574710adff9/src/Data.ts#L5-L7)
-
-- check nested dict / nested list etc to see if there's shadowing issues with vars

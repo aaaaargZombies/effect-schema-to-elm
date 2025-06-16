@@ -3,7 +3,12 @@ import { pipe, Schema } from "effect";
 const ElmType = Symbol.for("ElmType");
 
 // TODO better type for this
-type Comparable = typeof Char | typeof String | typeof Int | typeof Float;
+type Comparable =
+  | typeof Bool
+  | typeof Char
+  | typeof String
+  | typeof Int
+  | typeof Float;
 // | typeof List<Comparable>;
 
 // wanted to give these as params to things like Maybe but it seems to break!?
@@ -132,7 +137,14 @@ export const Result = (args: {
   );
 
 // Set
-export const Set_ = (a: Schema.Schema.Any) => Schema.Set(a);
+// TODO and Elm.Set
+// child needs to be Comparable
+export const Set_ = (a: Comparable) =>
+  Schema.HashSet(a).pipe(
+    Schema.annotations({
+      [ElmType]: "Set",
+    }),
+  );
 
 // Tuple
 export const Tuple2 = (a: Schema.Schema.Any, b: Schema.Schema.Any) =>
