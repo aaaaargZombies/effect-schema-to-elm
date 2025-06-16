@@ -32,6 +32,13 @@ pnpm test
 
 ## TODO / BUGS
 
+### failed test count
+
+```
+Passed:   28
+Failed:   14
+```
+
 ### Need to target `Encoded` value of the `Schema`
 
 #### approaches
