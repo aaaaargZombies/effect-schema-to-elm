@@ -18,77 +18,71 @@ myCharEncoder arg =
 
 myComplexDictEncoder : Generated.EffectTypes.MyComplexDict -> Json.Encode.Value
 myComplexDictEncoder arg =
-    Json.Encode.object
-        [ ( "_id", Json.Encode.string "HashMap" )
-        , ( "values"
-          , Json.Encode.list
-                (\a -> a)
-                (List.map
-                     (\keyVal0 ->
-                          Json.Encode.list
-                              (\listUnpack -> listUnpack)
-                              [ Json.Encode.list
-                                  Json.Encode.string
-                                  (Tuple.first keyVal0)
-                              , case Tuple.second keyVal0 of
-                                  Generated.EffectTypes.A a ->
-                                      Json.Encode.object
-                                          [ ( "a", Json.Encode.string a ) ]
+    Json.Encode.list
+        (\a -> a)
+        (List.map
+             (\keyVal0 ->
+                  Json.Encode.list
+                      (\listUnpack -> listUnpack)
+                      [ Json.Encode.list
+                          Json.Encode.string
+                          (Tuple.first keyVal0)
+                      , case Tuple.second keyVal0 of
+                          Generated.EffectTypes.A a ->
+                              Json.Encode.object
+                                  [ ( "a", Json.Encode.string a ) ]
 
-                                  Generated.EffectTypes.B a ->
-                                      Json.Encode.object
-                                          [ ( "a", Json.Encode.int a ) ]
+                          Generated.EffectTypes.B a ->
+                              Json.Encode.object [ ( "a", Json.Encode.int a ) ]
 
-                                  Generated.EffectTypes.C a b c d ->
-                                      Json.Encode.object
-                                          [ ( "a", Json.Encode.int a )
-                                          , ( "b", Json.Encode.int b )
-                                          , ( "c", Json.Encode.string c )
-                                          , ( "d"
-                                            , Json.Encode.list
-                                                  (\arg0 ->
-                                                       case arg0 of
-                                                           Ok ok ->
-                                                               Json.Encode.object
-                                                                   [ ( "_id"
-                                                                     , Json.Encode.string
-                                                                           "Either"
-                                                                     )
-                                                                   , ( "_tag"
-                                                                     , Json.Encode.string
-                                                                           "Right"
-                                                                     )
-                                                                   , ( "right"
-                                                                     , Json.Encode.int
-                                                                           ok
-                                                                     )
-                                                                   ]
+                          Generated.EffectTypes.C a b c d ->
+                              Json.Encode.object
+                                  [ ( "a", Json.Encode.int a )
+                                  , ( "b", Json.Encode.int b )
+                                  , ( "c", Json.Encode.string c )
+                                  , ( "d"
+                                    , Json.Encode.list
+                                          (\arg0 ->
+                                               case arg0 of
+                                                   Ok ok ->
+                                                       Json.Encode.object
+                                                           [ ( "_id"
+                                                             , Json.Encode.string
+                                                                   "Either"
+                                                             )
+                                                           , ( "_tag"
+                                                             , Json.Encode.string
+                                                                   "Right"
+                                                             )
+                                                           , ( "right"
+                                                             , Json.Encode.int
+                                                                   ok
+                                                             )
+                                                           ]
 
-                                                           Err err ->
-                                                               Json.Encode.object
-                                                                   [ ( "_id"
-                                                                     , Json.Encode.string
-                                                                           "Either"
-                                                                     )
-                                                                   , ( "_tag"
-                                                                     , Json.Encode.string
-                                                                           "Left"
-                                                                     )
-                                                                   , ( "left"
-                                                                     , Json.Encode.string
-                                                                           err
-                                                                     )
-                                                                   ]
-                                                  )
-                                                  d
-                                            )
-                                          ]
-                              ]
-                     )
-                     (Dict.toList arg)
-                )
-          )
-        ]
+                                                   Err err ->
+                                                       Json.Encode.object
+                                                           [ ( "_id"
+                                                             , Json.Encode.string
+                                                                   "Either"
+                                                             )
+                                                           , ( "_tag"
+                                                             , Json.Encode.string
+                                                                   "Left"
+                                                             )
+                                                           , ( "left"
+                                                             , Json.Encode.string
+                                                                   err
+                                                             )
+                                                           ]
+                                          )
+                                          d
+                                    )
+                                  ]
+                      ]
+             )
+             (Dict.toList arg)
+        )
 
 
 myNewTypeEncoder : Generated.EffectTypes.MyNewType -> Json.Encode.Value
@@ -150,23 +144,18 @@ myNewTypeTwoEncoder arg =
 
 myDictEncoder : Generated.EffectTypes.MyDict -> Json.Encode.Value
 myDictEncoder arg =
-    Json.Encode.object
-        [ ( "_id", Json.Encode.string "HashMap" )
-        , ( "values"
-          , Json.Encode.list
-                (\a -> a)
-                (List.map
-                     (\keyVal0 ->
-                          Json.Encode.list
-                              (\listUnpack -> listUnpack)
-                              [ Json.Encode.string (Tuple.first keyVal0)
-                              , Json.Encode.int (Tuple.second keyVal0)
-                              ]
-                     )
-                     (Dict.toList arg)
-                )
-          )
-        ]
+    Json.Encode.list
+        (\a -> a)
+        (List.map
+             (\keyVal0 ->
+                  Json.Encode.list
+                      (\listUnpack -> listUnpack)
+                      [ Json.Encode.string (Tuple.first keyVal0)
+                      , Json.Encode.int (Tuple.second keyVal0)
+                      ]
+             )
+             (Dict.toList arg)
+        )
 
 
 myFloatEncoder : Generated.EffectTypes.MyFloat -> Json.Encode.Value
@@ -182,29 +171,24 @@ myIntEncoder =
 myKeyTupleDictEncoder :
     Generated.EffectTypes.MyKeyTupleDict -> Json.Encode.Value
 myKeyTupleDictEncoder arg =
-    Json.Encode.object
-        [ ( "_id", Json.Encode.string "HashMap" )
-        , ( "values"
-          , Json.Encode.list
-                (\a -> a)
-                (List.map
-                     (\keyVal0 ->
-                          Json.Encode.list
-                              (\listUnpack -> listUnpack)
-                              [ Json.Encode.list
-                                  (\listUnpack -> listUnpack)
-                                  [ Json.Encode.string
-                                        (Tuple.first (Tuple.first keyVal0))
-                                  , Json.Encode.float
-                                        (Tuple.second (Tuple.first keyVal0))
-                                  ]
-                              , Json.Encode.int (Tuple.second keyVal0)
-                              ]
-                     )
-                     (Dict.toList arg)
-                )
-          )
-        ]
+    Json.Encode.list
+        (\a -> a)
+        (List.map
+             (\keyVal0 ->
+                  Json.Encode.list
+                      (\listUnpack -> listUnpack)
+                      [ Json.Encode.list
+                          (\listUnpack -> listUnpack)
+                          [ Json.Encode.string
+                                (Tuple.first (Tuple.first keyVal0))
+                          , Json.Encode.float
+                                (Tuple.second (Tuple.first keyVal0))
+                          ]
+                      , Json.Encode.int (Tuple.second keyVal0)
+                      ]
+             )
+             (Dict.toList arg)
+        )
 
 
 myListEncoder : Generated.EffectTypes.MyList -> Json.Encode.Value
@@ -227,41 +211,29 @@ myMaybeEncoder arg =
 
 myNestedDictEncoder : Generated.EffectTypes.MyNestedDict -> Json.Encode.Value
 myNestedDictEncoder arg =
-    Json.Encode.object
-        [ ( "_id", Json.Encode.string "HashMap" )
-        , ( "values"
-          , Json.Encode.list
-                (\a -> a)
-                (List.map
-                     (\keyVal0 ->
-                          Json.Encode.list
-                              (\listUnpack -> listUnpack)
-                              [ Json.Encode.string (Tuple.first keyVal0)
-                              , Json.Encode.object
-                                  [ ( "_id", Json.Encode.string "HashMap" )
-                                  , ( "values"
-                                    , Json.Encode.list
-                                        (\a -> a)
-                                        (List.map
-                                           (\keyVal1 ->
-                                              Json.Encode.list
-                                                  (\listUnpack -> listUnpack)
-                                                  [ Json.Encode.string
-                                                      (Tuple.first keyVal1)
-                                                  , Json.Encode.int
-                                                      (Tuple.second keyVal1)
-                                                  ]
-                                           )
-                                           (Dict.toList (Tuple.second keyVal0))
-                                        )
-                                    )
-                                  ]
-                              ]
-                     )
-                     (Dict.toList arg)
-                )
-          )
-        ]
+    Json.Encode.list
+        (\a -> a)
+        (List.map
+             (\keyVal0 ->
+                  Json.Encode.list
+                      (\listUnpack -> listUnpack)
+                      [ Json.Encode.string (Tuple.first keyVal0)
+                      , Json.Encode.list
+                          (\a -> a)
+                          (List.map
+                             (\keyVal1 ->
+                                Json.Encode.list
+                                    (\listUnpack -> listUnpack)
+                                    [ Json.Encode.string (Tuple.first keyVal1)
+                                    , Json.Encode.int (Tuple.second keyVal1)
+                                    ]
+                             )
+                             (Dict.toList (Tuple.second keyVal0))
+                          )
+                      ]
+             )
+             (Dict.toList arg)
+        )
 
 
 myNestedTupleEncoder : Generated.EffectTypes.MyNestedTuple -> Json.Encode.Value

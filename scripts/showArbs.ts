@@ -11,4 +11,4 @@ const show = (a: Schema.Schema.Any) =>
     console.log,
   );
 
-show(Data.Maybe(Data.Int));
+show(Data.Dict({ key: Data.String, value: Data.Int }));

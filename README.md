@@ -35,8 +35,8 @@ pnpm test
 ### failed test count
 
 ```
-Passed:   29
-Failed:   13
+Passed:   33
+Failed:   9
 ```
 
 ### Need to target `Encoded` value of the `Schema`

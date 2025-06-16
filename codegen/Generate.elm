@@ -239,14 +239,11 @@ astToDecoder ast =
             Gen.Json.Decode.int
 
         Dict_ key val ->
-            -- not sure about this use of call_
             Gen.Json.Decode.map Gen.Dict.call_.fromList
-                (Gen.Json.Decode.at [ "values" ]
-                    (Gen.Json.Decode.list
-                        (Gen.Json.Decode.map2 Gen.Tuple.pair
-                            (Gen.Json.Decode.index 0 (astToDecoder (comparableToAst key)))
-                            (Gen.Json.Decode.index 1 (astToDecoder val))
-                        )
+                (Gen.Json.Decode.list
+                    (Gen.Json.Decode.map2 Gen.Tuple.pair
+                        (Gen.Json.Decode.index 0 (astToDecoder (comparableToAst key)))
+                        (Gen.Json.Decode.index 1 (astToDecoder val))
                     )
                 )
 
@@ -454,12 +451,6 @@ astToEncoderInternal depth ast =
                             )
                         )
                     |> Gen.Json.Encode.call_.list (Elm.fn (Elm.Arg.var "a") (\a -> a))
-                    |> (\kvs ->
-                            Gen.Json.Encode.object
-                                [ Elm.tuple (Elm.string "_id") (Gen.Json.Encode.call_.string (Elm.string "HashMap"))
-                                , Elm.tuple (Elm.string "values") kvs
-                                ]
-                       )
 
         List_ a ->
             Gen.Json.Encode.call_.list (Elm.functionReduced "arg" (\arg -> astToEncoder_ a arg))
