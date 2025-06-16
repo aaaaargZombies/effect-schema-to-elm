@@ -21,10 +21,15 @@ encoderTestHelper : String -> String -> Json.Decode.Decoder a -> (a -> Json.Enco
 encoderTestHelper description input decoder encoder =
     Test.test description <|
         \_ ->
-            Json.Decode.decodeString (Json.Decode.list decoder) input
+            let
+                input_ =
+                    String.trim input
+            in
+            Json.Decode.decodeString (Json.Decode.list decoder) input_
                 |> Result.map (\decoded -> Json.Encode.list encoder decoded)
-                |> Result.andThen (Json.Decode.decodeValue (Json.Decode.list decoder))
-                |> Expect.ok
+                |> Result.map (Json.Encode.encode 0)
+                |> Result.withDefault ""
+                |> Expect.equal input_
 
 
 suite : Test
