@@ -30,14 +30,23 @@ myComplexDictEncoder arg =
                       , case Tuple.second keyVal0 of
                           Generated.EffectTypes.A a ->
                               Json.Encode.object
-                                  [ ( "a", Json.Encode.string a ) ]
+                                  [ ( "_id", Json.Encode.string "MyNewTypeTwo" )
+                                  , ( "_tag", Json.Encode.string "a" )
+                                  , ( "a", Json.Encode.string a )
+                                  ]
 
                           Generated.EffectTypes.B a ->
-                              Json.Encode.object [ ( "a", Json.Encode.int a ) ]
+                              Json.Encode.object
+                                  [ ( "_id", Json.Encode.string "MyNewTypeTwo" )
+                                  , ( "_tag", Json.Encode.string "b" )
+                                  , ( "a", Json.Encode.int a )
+                                  ]
 
                           Generated.EffectTypes.C a b c d ->
                               Json.Encode.object
-                                  [ ( "a", Json.Encode.int a )
+                                  [ ( "_id", Json.Encode.string "MyNewTypeTwo" )
+                                  , ( "_tag", Json.Encode.string "c" )
+                                  , ( "a", Json.Encode.int a )
                                   , ( "b", Json.Encode.int b )
                                   , ( "c", Json.Encode.string c )
                                   , ( "d"
@@ -82,11 +91,16 @@ myNewTypeEncoder arg =
     case arg of
         Generated.EffectTypes.One one ->
             Json.Encode.object
-                [ ( "one", Json.Encode.string (String.fromChar one) ) ]
+                [ ( "_id", Json.Encode.string "MyNewType" )
+                , ( "_tag", Json.Encode.string "one" )
+                , ( "one", Json.Encode.string (String.fromChar one) )
+                ]
 
         Generated.EffectTypes.Two two val ->
             Json.Encode.object
-                [ ( "two", Json.Encode.string two )
+                [ ( "_id", Json.Encode.string "MyNewType" )
+                , ( "_tag", Json.Encode.string "two" )
+                , ( "two", Json.Encode.string two )
                 , ( "val", Json.Encode.string (String.fromChar val) )
                 ]
 
@@ -95,14 +109,24 @@ myNewTypeTwoEncoder : Generated.EffectTypes.MyNewTypeTwo -> Json.Encode.Value
 myNewTypeTwoEncoder arg =
     case arg of
         Generated.EffectTypes.A a ->
-            Json.Encode.object [ ( "a", Json.Encode.string a ) ]
+            Json.Encode.object
+                [ ( "_id", Json.Encode.string "MyNewTypeTwo" )
+                , ( "_tag", Json.Encode.string "a" )
+                , ( "a", Json.Encode.string a )
+                ]
 
         Generated.EffectTypes.B a ->
-            Json.Encode.object [ ( "a", Json.Encode.int a ) ]
+            Json.Encode.object
+                [ ( "_id", Json.Encode.string "MyNewTypeTwo" )
+                , ( "_tag", Json.Encode.string "b" )
+                , ( "a", Json.Encode.int a )
+                ]
 
         Generated.EffectTypes.C a b c d ->
             Json.Encode.object
-                [ ( "a", Json.Encode.int a )
+                [ ( "_id", Json.Encode.string "MyNewTypeTwo" )
+                , ( "_tag", Json.Encode.string "c" )
+                , ( "a", Json.Encode.int a )
                 , ( "b", Json.Encode.int b )
                 , ( "c", Json.Encode.string c )
                 , ( "d"
@@ -351,14 +375,24 @@ myRecordWithCustomTypeEncoder arg =
         [ ( "a"
           , case arg.a of
                 Generated.EffectTypes.A a ->
-                    Json.Encode.object [ ( "a", Json.Encode.string a ) ]
+                    Json.Encode.object
+                        [ ( "_id", Json.Encode.string "MyNewTypeTwo" )
+                        , ( "_tag", Json.Encode.string "a" )
+                        , ( "a", Json.Encode.string a )
+                        ]
 
                 Generated.EffectTypes.B a ->
-                    Json.Encode.object [ ( "a", Json.Encode.int a ) ]
+                    Json.Encode.object
+                        [ ( "_id", Json.Encode.string "MyNewTypeTwo" )
+                        , ( "_tag", Json.Encode.string "b" )
+                        , ( "a", Json.Encode.int a )
+                        ]
 
                 Generated.EffectTypes.C a b c d ->
                     Json.Encode.object
-                        [ ( "a", Json.Encode.int a )
+                        [ ( "_id", Json.Encode.string "MyNewTypeTwo" )
+                        , ( "_tag", Json.Encode.string "c" )
+                        , ( "a", Json.Encode.int a )
                         , ( "b", Json.Encode.int b )
                         , ( "c", Json.Encode.string c )
                         , ( "d"

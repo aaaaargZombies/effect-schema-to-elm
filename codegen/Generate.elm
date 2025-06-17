@@ -414,10 +414,12 @@ astToEncoderInternal depth ast =
                                 )
                                 (\args ->
                                     Gen.Json.Encode.object
-                                        (List.map2
-                                            (\( fieldName, type_ ) arg_ -> Elm.tuple (Elm.string fieldName) (astToEncoder_ type_ arg_))
-                                            params_
-                                            args
+                                        (Elm.tuple (Elm.string "_id") (Gen.Json.Encode.string customTypeName)
+                                            :: Elm.tuple (Elm.string "_tag") (Gen.Json.Encode.string variantName)
+                                            :: List.map2
+                                                (\( fieldName, type_ ) arg_ -> Elm.tuple (Elm.string fieldName) (astToEncoder_ type_ arg_))
+                                                params_
+                                                args
                                         )
                                 )
                         )
