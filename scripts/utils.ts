@@ -59,6 +59,15 @@ const bottom = `    """\n\n\n`;
 
 type Content = [string, any];
 
+export const elmFile = (moduleName: string, expressions: Content[]) => {
+  return (
+    module(moduleName) +
+    expressions.map(([name, content]) => {
+      [top(name), stringify(content), bottom].join("\n");
+    })
+  );
+};
+
 export const printElm = (moduleName: string, expressions: Content[]) => {
   console.log(module(moduleName));
   expressions.forEach(([name, content]) => {

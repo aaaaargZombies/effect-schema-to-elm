@@ -26,7 +26,7 @@ run : Script
 run =
     Pages.Script.withoutCliOptions
         (Pages.Script.writeFile
-            { path = "./test/encodedData.json"
+            { path = "./test/elmData.json"
             , body = body
             }
             |> BackendTask.allowFatal

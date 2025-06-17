@@ -1,6 +1,7 @@
 import * as Utils from "./utils.js";
 import * as TestData from "../src/testData.js";
 import { Schema } from "effect";
+import { writeFile } from "fs";
 
 const testData_ = Object.entries(TestData.mySchemas).map(([name, s]) => {
   const arbs = Utils.fuzz(1)(s);
@@ -9,4 +10,26 @@ const testData_ = Object.entries(TestData.mySchemas).map(([name, s]) => {
   return [`${name}Json`, data];
 });
 
-Utils.printElm("TestData", testData_);
+const testDataJS = testData_.reduce((acc, [name, data]) => {
+  acc[name] = data;
+  return acc;
+}, {});
+
+const testDataElm = Utils.elmFile("TestData", testData_);
+
+// file path assumed run from root of project via npm script
+writeFile("./test/tsData.json", JSON.stringify(testDataJS, null, 2), (err) => {
+  if (err) {
+    console.error("Error writing file", err);
+  } else {
+    console.log("JSON file written successfully");
+  }
+});
+
+writeFile("./elmSrc/TestData.elm", testDataElm, (err) => {
+  if (err) {
+    console.error("Error writing file", err);
+  } else {
+    console.log("JSON file written successfully");
+  }
+});
