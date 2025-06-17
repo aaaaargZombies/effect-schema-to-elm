@@ -39,6 +39,24 @@ Passed:   37
 Failed:   5
 ```
 
+stalling out on the string compare method helping because dict from Effect doesn't sort the by key, elm does so the returned encoded values will be in a diff order
+
+```ts
+// Decoding examples
+console.log(
+  decode([
+    ["a", "2"],
+    ["b", "2"],
+    ["c", "3"],
+  ]),
+);
+// Output: { _id: 'HashMap', values: [ [ 'a', 2 ], [ 'c', 3 ], [ 'b', 2 ] ] }
+```
+
+[example from effect schema docs](https://effect.website/docs/schema/effect-data-types/#hashmap-1)
+
+really want to be able to test against the actual decoders. need a way to get json out of elm.
+
 ### Need to target `Encoded` value of the `Schema`
 
 #### approaches

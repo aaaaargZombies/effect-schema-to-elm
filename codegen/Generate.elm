@@ -436,7 +436,8 @@ astToEncoderInternal depth ast =
             Gen.Json.Encode.call_.string
 
         Dict_ key val ->
-            -- { _id: "HashMap", values: [["length", -530028691]] },
+            -- [["length", -530028691]]
+            -- [[ key     , val      ]]
             \dict ->
                 dict
                     |> Gen.Dict.toList
