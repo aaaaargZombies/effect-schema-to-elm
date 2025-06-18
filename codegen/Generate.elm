@@ -14,6 +14,7 @@ import Gen.Json.Decode
 import Gen.Json.Decode.Extra
 import Gen.Json.Encode
 import Gen.List
+import Gen.Set
 import Gen.String
 import Gen.Triple.Extra
 import Gen.Tuple
@@ -46,6 +47,7 @@ type AST
     | Tuple2_ AST AST
     | Tuple3_ AST AST AST
     | CustomType String (List ( String, Dict String AST ))
+    | Set_ Comparable
 
 
 
@@ -365,6 +367,14 @@ astToDecoder ast =
                 (Gen.Json.Decode.index 1 (astToDecoder b))
                 (Gen.Json.Decode.index 2 (astToDecoder c))
 
+        Set_ a ->
+            let
+                decodeChild =
+                    a |> comparableToAst |> astToDecoder
+            in
+            Gen.Json.Decode.map Gen.Set.call_.fromList
+                (Gen.Json.Decode.list decodeChild)
+
 
 
 {-
@@ -530,6 +540,16 @@ astToEncoderInternal depth ast =
                     , astToEncoder_ c (Gen.Triple.Extra.third arg)
                     ]
 
+        Set_ a ->
+            let
+                encodeChildren =
+                    a |> comparableToAst |> astToEncoder_
+            in
+            \set ->
+                set
+                    |> Gen.Set.call_.toList
+                    |> Gen.Json.Encode.call_.list (Elm.functionReduced "arg" (\arg -> encodeChildren arg))
+
 
 
 {-
@@ -592,6 +612,9 @@ astToAnnotation ast =
             Type.record
                 (dict |> Dict.toList |> List.map (Tuple.mapSecond astToAnnotation))
 
+        Set_ a ->
+            Gen.Set.annotation_.set (a |> comparableToAst |> astToAnnotation)
+
 
 namedType : ( String, AST ) -> Type.Annotation
 namedType decodedAstPair =
@@ -635,6 +658,7 @@ decodeAST =
         , decodeDictDeclaration
         , decodeTuple2
         , decodeTuple3
+        , decodeSet
         ]
 
 
@@ -1071,6 +1095,30 @@ decodeTuple3 =
 
                 else
                     Json.Decode.fail "Not a Tuple3"
+            )
+
+
+decodeSet : Json.Decode.Decoder AST
+decodeSet =
+    Json.Decode.at [ "annotations", "Symbol(ElmType)" ] Json.Decode.string
+        |> Json.Decode.andThen
+            (\type_ ->
+                if type_ == "Set" then
+                    Json.Decode.at
+                        [ "to", "typeParameters" ]
+                        (Json.Decode.index 0 decodeAST)
+                        |> Json.Decode.andThen
+                            (\param ->
+                                case astToComparable param of
+                                    Just param_ ->
+                                        Json.Decode.succeed <| Set_ param_
+
+                                    Nothing ->
+                                        Json.Decode.fail "Sets can only contain Comparable types"
+                            )
+
+                else
+                    Json.Decode.fail "Not a Set"
             )
 
 

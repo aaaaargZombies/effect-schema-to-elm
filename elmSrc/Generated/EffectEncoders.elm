@@ -3,6 +3,7 @@ module Generated.EffectEncoders exposing (..)
 import Dict
 import Generated.EffectTypes
 import Json.Encode
+import Set
 import Triple.Extra
 
 
@@ -538,6 +539,11 @@ myResult_Encoder arg =
                 [ ( "_tag", Json.Encode.string "Left" )
                 , ( "left", Json.Encode.string err )
                 ]
+
+
+mySetEncoder : Generated.EffectTypes.MySet -> Json.Encode.Value
+mySetEncoder arg =
+    Json.Encode.list Json.Encode.int (Set.toList arg)
 
 
 myStringEncoder : Generated.EffectTypes.MyString -> Json.Encode.Value

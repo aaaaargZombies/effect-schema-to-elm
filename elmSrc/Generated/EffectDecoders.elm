@@ -4,6 +4,7 @@ import Dict
 import Generated.EffectTypes
 import Json.Decode
 import Json.Decode.Extra
+import Set
 import Triple.Extra
 
 
@@ -1339,6 +1340,11 @@ myResult_Decoder =
                (Json.Decode.field "left" Json.Decode.string)
             )
         ]
+
+
+mySetDecoder : Json.Decode.Decoder Generated.EffectTypes.MySet
+mySetDecoder =
+    Json.Decode.map Set.fromList (Json.Decode.list Json.Decode.int)
 
 
 myStringDecoder : Json.Decode.Decoder Generated.EffectTypes.MyString

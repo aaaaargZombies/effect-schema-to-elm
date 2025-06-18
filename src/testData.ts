@@ -115,4 +115,5 @@ export const mySchemas = {
     ),
     Data.String,
   ),
+  mySet: Data.Set_(Data.Int),
 };

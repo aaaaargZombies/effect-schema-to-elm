@@ -1,6 +1,7 @@
 module Generated.EffectTypes exposing (..)
 
 import Dict
+import Set
 
 
 type alias MyBool =
@@ -104,6 +105,10 @@ type alias MyResult =
 
 type alias MyResult_ =
     Result String (Maybe (List String))
+
+
+type alias MySet =
+    Set.Set Int
 
 
 type alias MyString =
