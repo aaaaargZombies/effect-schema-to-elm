@@ -1,7 +1,6 @@
 module Generated.EffectTypes exposing (..)
 
 import Dict
-import Triple.Extra
 
 
 type alias MyBool =
@@ -53,6 +52,10 @@ type alias MyMaybe =
 
 type alias MyNestedDict =
     Dict.Dict String (Dict.Dict String Int)
+
+
+type alias MyNestedTriple =
+    ( Bool, ( ( Bool, ( Bool, Bool, String ), String ), Bool, String ), String )
 
 
 type alias MyNestedTuple =
@@ -108,7 +111,7 @@ type alias MyString =
 
 
 type alias MyTriple =
-    Triple.Extra.Triple Bool Bool String
+    ( Bool, Bool, String )
 
 
 type alias MyTuple =

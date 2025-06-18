@@ -246,6 +246,59 @@ myNestedDictEncoder arg =
         )
 
 
+myNestedTripleEncoder :
+    Generated.EffectTypes.MyNestedTriple -> Json.Encode.Value
+myNestedTripleEncoder arg =
+    Json.Encode.list
+        (\listUnpack -> listUnpack)
+        [ Json.Encode.bool (Triple.Extra.first arg)
+        , Json.Encode.list
+            (\listUnpack -> listUnpack)
+            [ Json.Encode.list
+                  (\listUnpack -> listUnpack)
+                  [ Json.Encode.bool
+                      (Triple.Extra.first
+                         (Triple.Extra.first (Triple.Extra.second arg))
+                      )
+                  , Json.Encode.list
+                      (\listUnpack -> listUnpack)
+                      [ Json.Encode.bool
+                            (Triple.Extra.first
+                                 (Triple.Extra.second
+                                      (Triple.Extra.first
+                                           (Triple.Extra.second arg)
+                                      )
+                                 )
+                            )
+                      , Json.Encode.bool
+                            (Triple.Extra.second
+                                 (Triple.Extra.second
+                                      (Triple.Extra.first
+                                           (Triple.Extra.second arg)
+                                      )
+                                 )
+                            )
+                      , Json.Encode.string
+                            (Triple.Extra.third
+                                 (Triple.Extra.second
+                                      (Triple.Extra.first
+                                           (Triple.Extra.second arg)
+                                      )
+                                 )
+                            )
+                      ]
+                  , Json.Encode.string
+                      (Triple.Extra.third
+                         (Triple.Extra.first (Triple.Extra.second arg))
+                      )
+                  ]
+            , Json.Encode.bool (Triple.Extra.second (Triple.Extra.second arg))
+            , Json.Encode.string (Triple.Extra.third (Triple.Extra.second arg))
+            ]
+        , Json.Encode.string (Triple.Extra.third arg)
+        ]
+
+
 myNestedTupleEncoder : Generated.EffectTypes.MyNestedTuple -> Json.Encode.Value
 myNestedTupleEncoder arg =
     Json.Encode.list

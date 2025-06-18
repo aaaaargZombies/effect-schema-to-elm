@@ -42,6 +42,7 @@ body =
         , ( "myNestedTupleJson", encoded TestData.myNestedTupleJson Generated.EffectDecoders.myNestedTupleDecoder Generated.EffectEncoders.myNestedTupleEncoder )
         , ( "myNestedDictJson", encoded TestData.myNestedDictJson Generated.EffectDecoders.myNestedDictDecoder Generated.EffectEncoders.myNestedDictEncoder )
         , ( "myTripleJson", encoded TestData.myTripleJson Generated.EffectDecoders.myTripleDecoder Generated.EffectEncoders.myTripleEncoder )
+        , ( "myNestedTripleJson", encoded TestData.myNestedTripleJson Generated.EffectDecoders.myNestedTripleDecoder Generated.EffectEncoders.myNestedTripleEncoder )
         ]
         |> Json.Encode.encode 0
 

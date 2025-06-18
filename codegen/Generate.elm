@@ -587,7 +587,7 @@ astToAnnotation ast =
             Type.tuple (astToAnnotation a) (astToAnnotation b)
 
         Tuple3_ a b c ->
-            Gen.Triple.Extra.annotation_.triple (astToAnnotation a) (astToAnnotation b) (astToAnnotation c)
+            Type.triple (astToAnnotation a) (astToAnnotation b) (astToAnnotation c)
 
         Record_ dict ->
             Type.record

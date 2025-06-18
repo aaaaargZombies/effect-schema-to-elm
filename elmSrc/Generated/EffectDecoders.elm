@@ -352,6 +352,39 @@ myNestedDictDecoder =
         )
 
 
+myNestedTripleDecoder : Json.Decode.Decoder Generated.EffectTypes.MyNestedTriple
+myNestedTripleDecoder =
+    Json.Decode.map3
+        Triple.Extra.triple
+        (Json.Decode.index 0 Json.Decode.bool)
+        (Json.Decode.index
+             1
+             (Json.Decode.map3
+                  Triple.Extra.triple
+                  (Json.Decode.index
+                       0
+                       (Json.Decode.map3
+                            Triple.Extra.triple
+                            (Json.Decode.index 0 Json.Decode.bool)
+                            (Json.Decode.index
+                                 1
+                                 (Json.Decode.map3
+                                      Triple.Extra.triple
+                                      (Json.Decode.index 0 Json.Decode.bool)
+                                      (Json.Decode.index 1 Json.Decode.bool)
+                                      (Json.Decode.index 2 Json.Decode.string)
+                                 )
+                            )
+                            (Json.Decode.index 2 Json.Decode.string)
+                       )
+                  )
+                  (Json.Decode.index 1 Json.Decode.bool)
+                  (Json.Decode.index 2 Json.Decode.string)
+             )
+        )
+        (Json.Decode.index 2 Json.Decode.string)
+
+
 myNestedTupleDecoder : Json.Decode.Decoder Generated.EffectTypes.MyNestedTuple
 myNestedTupleDecoder =
     Json.Decode.map2

@@ -102,4 +102,17 @@ export const mySchemas = {
     value: Data.Dict({ key: Data.String, value: Data.Int }),
   }),
   myTriple: Data.Tuple3(Data.Bool, Data.Bool, Data.String),
+  myNestedTriple: Data.Tuple3(
+    Data.Bool,
+    Data.Tuple3(
+      Data.Tuple3(
+        Data.Bool,
+        Data.Tuple3(Data.Bool, Data.Bool, Data.String),
+        Data.String,
+      ),
+      Data.Bool,
+      Data.String,
+    ),
+    Data.String,
+  ),
 };
