@@ -1,10 +1,16 @@
 module Generated.EffectEncoders exposing (..)
 
+import Array
 import Dict
 import Generated.EffectTypes
 import Json.Encode
 import Set
 import Triple.Extra
+
+
+myArrayEncoder : Generated.EffectTypes.MyArray -> Json.Encode.Value
+myArrayEncoder arg =
+    Json.Encode.list Json.Encode.bool (Array.toList arg)
 
 
 myBoolEncoder : Generated.EffectTypes.MyBool -> Json.Encode.Value

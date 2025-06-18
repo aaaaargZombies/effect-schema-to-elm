@@ -1,7 +1,12 @@
 module Generated.EffectTypes exposing (..)
 
+import Array
 import Dict
 import Set
+
+
+type alias MyArray =
+    Array.Array Bool
 
 
 type alias MyBool =

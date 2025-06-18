@@ -226,14 +226,3 @@ export const CustomType = (
 //   JSON.stringify,
 //   console.log,
 // );
-
-export const custom = Schema.Union(
-  Schema.Struct({ _tag: Schema.String }),
-  Schema.Struct({ _tag: Schema.String, value: Schema.Boolean }),
-);
-
-export const custom_ = (value: Schema.Schema.Any) =>
-  Schema.Union(
-    Schema.Struct({ _tag: Schema.Literal("One") }),
-    Schema.Struct({ _tag: Schema.Literal("Two"), value: value }),
-  );

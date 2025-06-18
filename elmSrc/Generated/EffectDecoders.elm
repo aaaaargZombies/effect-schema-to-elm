@@ -1,11 +1,17 @@
 module Generated.EffectDecoders exposing (..)
 
+import Array
 import Dict
 import Generated.EffectTypes
 import Json.Decode
 import Json.Decode.Extra
 import Set
 import Triple.Extra
+
+
+myArrayDecoder : Json.Decode.Decoder Generated.EffectTypes.MyArray
+myArrayDecoder =
+    Json.Decode.map Array.fromList (Json.Decode.list Json.Decode.bool)
 
 
 myBoolDecoder : Json.Decode.Decoder Generated.EffectTypes.MyBool

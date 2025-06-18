@@ -8,6 +8,7 @@ import Elm.Annotation as Type
 import Elm.Arg
 import Elm.Case
 import Elm.Op
+import Gen.Array
 import Gen.CodeGen.Generate as Generate
 import Gen.Dict
 import Gen.Json.Decode
@@ -40,6 +41,7 @@ type AST
     | Float_
     | Int_
     | String_
+    | Array_ AST
     | List_ AST
     | Maybe_ AST
     | Result_ AST AST
@@ -375,6 +377,14 @@ astToDecoder ast =
             Gen.Json.Decode.map Gen.Set.call_.fromList
                 (Gen.Json.Decode.list decodeChild)
 
+        Array_ a ->
+            let
+                decodeChild =
+                    a |> astToDecoder
+            in
+            Gen.Json.Decode.map Gen.Array.call_.fromList
+                (Gen.Json.Decode.list decodeChild)
+
 
 
 {-
@@ -550,6 +560,16 @@ astToEncoderInternal depth ast =
                     |> Gen.Set.call_.toList
                     |> Gen.Json.Encode.call_.list (Elm.functionReduced "arg" (\arg -> encodeChildren arg))
 
+        Array_ a ->
+            let
+                encodeChildren =
+                    a |> astToEncoder_
+            in
+            \set ->
+                set
+                    |> Gen.Array.call_.toList
+                    |> Gen.Json.Encode.call_.list (Elm.functionReduced "arg" (\arg -> encodeChildren arg))
+
 
 
 {-
@@ -615,6 +635,9 @@ astToAnnotation ast =
         Set_ a ->
             Gen.Set.annotation_.set (a |> comparableToAst |> astToAnnotation)
 
+        Array_ a ->
+            Gen.Array.annotation_.array (astToAnnotation a)
+
 
 namedType : ( String, AST ) -> Type.Annotation
 namedType decodedAstPair =
@@ -659,6 +682,7 @@ decodeAST =
         , decodeTuple2
         , decodeTuple3
         , decodeSet
+        , decodeArray
         ]
 
 
@@ -1119,6 +1143,25 @@ decodeSet =
 
                 else
                     Json.Decode.fail "Not a Set"
+            )
+
+
+decodeArray : Json.Decode.Decoder AST
+decodeArray =
+    Json.Decode.at [ "annotations", "Symbol(ElmType)" ] Json.Decode.string
+        |> Json.Decode.andThen
+            (\type_ ->
+                if type_ == "Array" then
+                    Json.Decode.at
+                        [ "rest" ]
+                        (Json.Decode.index 0 (Json.Decode.at [ "type" ] decodeAST))
+                        |> Json.Decode.andThen
+                            (\param ->
+                                Json.Decode.succeed <| Array_ param
+                            )
+
+                else
+                    Json.Decode.fail "Not a Array"
             )
 
 

@@ -44,6 +44,7 @@ body =
         , ( "myTripleJson", encoded TestData.myTripleJson Generated.EffectDecoders.myTripleDecoder Generated.EffectEncoders.myTripleEncoder )
         , ( "myNestedTripleJson", encoded TestData.myNestedTripleJson Generated.EffectDecoders.myNestedTripleDecoder Generated.EffectEncoders.myNestedTripleEncoder )
         , ( "mySetJson", encoded TestData.mySetJson Generated.EffectDecoders.mySetDecoder Generated.EffectEncoders.mySetEncoder )
+        , ( "myArrayJson", encoded TestData.myArrayJson Generated.EffectDecoders.myArrayDecoder Generated.EffectEncoders.myArrayEncoder )
         ]
         |> Json.Encode.encode 0
 
