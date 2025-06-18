@@ -53,8 +53,7 @@ type AST
 
 
 type Comparable
-    = Bool__
-    | Char__
+    = Char__
     | Float__
     | Int__
     | String__
@@ -1189,9 +1188,6 @@ safeValueName s =
 astToComparable : AST -> Maybe Comparable
 astToComparable a =
     case a of
-        Bool_ ->
-            Just <| Bool__
-
         Char_ ->
             Just <| Char__
 
@@ -1239,9 +1235,6 @@ astToComparable a =
 comparableToAst : Comparable -> AST
 comparableToAst c =
     case c of
-        Bool__ ->
-            Bool_
-
         Char__ ->
             Char_
 
