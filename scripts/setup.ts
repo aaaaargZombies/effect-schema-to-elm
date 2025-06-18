@@ -4,7 +4,7 @@ import { Schema } from "effect";
 import { writeFile } from "fs";
 
 const testData_ = Object.entries(TestData.mySchemas).map(([name, s]) => {
-  const arbs = Utils.fuzz(1)(s);
+  const arbs = Utils.fuzz(200)(s);
   const encoder = Schema.encodeSync(s);
   const data = arbs.map((a) => encoder(a));
   return [`${name}Json`, data];
@@ -30,6 +30,6 @@ writeFile("./elmSrc/TestData.elm", testDataElm, (err) => {
   if (err) {
     console.error("Error writing file", err);
   } else {
-    console.log("JSON file written successfully");
+    console.log("Elm file written successfully");
   }
 });

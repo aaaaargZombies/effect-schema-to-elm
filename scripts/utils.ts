@@ -60,12 +60,12 @@ const bottom = `    """\n\n\n`;
 type Content = [string, any];
 
 export const elmFile = (moduleName: string, expressions: Content[]) => {
-  return (
-    module(moduleName) +
-    expressions.map(([name, content]) => {
-      [top(name), stringify(content), bottom].join("\n");
-    })
-  );
+  const body = expressions
+    .map(([name, content]) =>
+      [top(name), stringify(content), bottom].join("\n"),
+    )
+    .join("\n");
+  return module(moduleName) + body;
 };
 
 export const printElm = (moduleName: string, expressions: Content[]) => {

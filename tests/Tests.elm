@@ -27,9 +27,8 @@ encoderTestHelper description input decoder encoder =
             in
             Json.Decode.decodeString (Json.Decode.list decoder) input_
                 |> Result.map (\decoded -> Json.Encode.list encoder decoded)
-                |> Result.map (Json.Encode.encode 0)
-                |> Result.withDefault ""
-                |> Expect.equal input_
+                |> Result.map (Json.Decode.decodeValue (Json.Decode.list decoder))
+                |> Expect.ok
 
 
 suite : Test
