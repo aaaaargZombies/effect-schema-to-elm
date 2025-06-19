@@ -35,21 +35,21 @@ import Triple.Extra
 
 
 type AST
-    = Bool_
+    = Array_ AST
+    | Bool_
     | Char_
+    | CustomType String (List ( String, Dict String AST ))
     | Dict_ Comparable AST
     | Float_
     | Int_
-    | String_
-    | Array_ AST
     | List_ AST
     | Maybe_ AST
-    | Result_ AST AST
     | Record_ (Dict String AST)
+    | Result_ AST AST
+    | Set_ Comparable
+    | String_
     | Tuple2_ AST AST
     | Tuple3_ AST AST AST
-    | CustomType String (List ( String, Dict String AST ))
-    | Set_ Comparable
 
 
 
@@ -60,8 +60,8 @@ type Comparable
     = Char__
     | Float__
     | Int__
-    | String__
     | List__ Comparable
+    | String__
     | Tuple2__ Comparable Comparable
     | Tuple3__ Comparable Comparable Comparable
 
@@ -670,19 +670,19 @@ decodeAST =
         , decodeString
 
         -- Containers
-        , decodeMaybe
-        , decodeMaybeDecleration
-        , decodeList
-        , decodeResult
-        , decodeResultDecleration
-        , decodeRecord
+        , decodeArray
         , decodeCustomType
         , decodeDict
         , decodeDictDeclaration
+        , decodeList
+        , decodeMaybe
+        , decodeMaybeDecleration
+        , decodeRecord
+        , decodeResult
+        , decodeResultDecleration
+        , decodeSet
         , decodeTuple2
         , decodeTuple3
-        , decodeSet
-        , decodeArray
         ]
 
 

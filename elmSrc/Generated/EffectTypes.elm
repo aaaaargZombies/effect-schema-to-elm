@@ -17,6 +17,20 @@ type alias MyChar =
     Char.Char
 
 
+type alias MyComplexArray =
+    Array.Array { a : Char.Char
+    , b : List Char.Char
+    , c : Maybe Int
+    , d : Char.Char
+    , e : Char.Char
+    , f : Result String (Result String (Maybe (List String)))
+    , g : Set.Set Int
+    , h : Char.Char
+    , i : { one : Char.Char, two : String }
+    , j : Float
+    }
+
+
 type alias MyComplexDict =
     Dict.Dict (List String) MyNewTypeTwo
 
@@ -56,12 +70,16 @@ type alias MyMaybe =
     Maybe Int
 
 
+type alias MyNestedArray =
+    Array.Array (Array.Array Int)
+
+
 type alias MyNestedDict =
     Dict.Dict String (Dict.Dict String Int)
 
 
 type alias MyNestedTriple =
-    ( Bool, ( ( Bool, ( Bool, Bool, String ), String ), Bool, String ), String )
+    ( Bool, ( ( Bool, ( Bool, Bool, String ), String ), Bool, String ), Char.Char )
 
 
 type alias MyNestedTuple =

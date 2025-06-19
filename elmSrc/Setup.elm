@@ -45,8 +45,10 @@ body =
         , ( "myNestedTripleJson", encoded TestData.myNestedTripleJson Generated.EffectDecoders.myNestedTripleDecoder Generated.EffectEncoders.myNestedTripleEncoder )
         , ( "mySetJson", encoded TestData.mySetJson Generated.EffectDecoders.mySetDecoder Generated.EffectEncoders.mySetEncoder )
         , ( "myArrayJson", encoded TestData.myArrayJson Generated.EffectDecoders.myArrayDecoder Generated.EffectEncoders.myArrayEncoder )
+        , ( "myComplexArrayJson", encoded TestData.myComplexArrayJson Generated.EffectDecoders.myComplexArrayDecoder Generated.EffectEncoders.myComplexArrayEncoder )
+        , ( "myNestedArrayJson", encoded TestData.myNestedArrayJson Generated.EffectDecoders.myNestedArrayDecoder Generated.EffectEncoders.myNestedArrayEncoder )
         ]
-        |> Json.Encode.encode 0
+        |> Json.Encode.encode 2
 
 
 run : Script
@@ -57,4 +59,5 @@ run =
             , body = body
             }
             |> BackendTask.allowFatal
+            |> BackendTask.andThen (\_ -> Pages.Script.log "JSON file written successfully")
         )

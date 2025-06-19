@@ -36,6 +36,451 @@ myCharDecoder =
         Json.Decode.string
 
 
+myComplexArrayDecoder : Json.Decode.Decoder Generated.EffectTypes.MyComplexArray
+myComplexArrayDecoder =
+    Json.Decode.map
+        Array.fromList
+        (Json.Decode.list
+             (Json.Decode.Extra.andMap
+                  (Json.Decode.field "j" Json.Decode.float)
+                  (Json.Decode.Extra.andMap
+                       (Json.Decode.field
+                            "i"
+                            (Json.Decode.Extra.andMap
+                                 (Json.Decode.field "two" Json.Decode.string)
+                                 (Json.Decode.Extra.andMap
+                                      (Json.Decode.field
+                                           "one"
+                                           (Json.Decode.andThen
+                                                (\andThenUnpack ->
+                                                     case
+                                                         String.uncons
+                                                             andThenUnpack
+                                                     of
+                                                         Nothing ->
+                                                             Json.Decode.fail
+                                                                 "Not a Char"
+
+                                                         Just ( char, "" ) ->
+                                                             Json.Decode.succeed
+                                                                 char
+
+                                                         _ ->
+                                                             Json.Decode.fail
+                                                                 "Not a Char"
+                                                )
+                                                Json.Decode.string
+                                           )
+                                      )
+                                      (Json.Decode.succeed
+                                           (\one two -> { one = one, two = two }
+                                           )
+                                      )
+                                 )
+                            )
+                       )
+                       (Json.Decode.Extra.andMap
+                            (Json.Decode.field
+                                 "h"
+                                 (Json.Decode.andThen
+                                      (\andThenUnpack ->
+                                           case String.uncons andThenUnpack of
+                                               Nothing ->
+                                                   Json.Decode.fail "Not a Char"
+
+                                               Just ( char, "" ) ->
+                                                   Json.Decode.succeed char
+
+                                               _ ->
+                                                   Json.Decode.fail "Not a Char"
+                                      )
+                                      Json.Decode.string
+                                 )
+                            )
+                            (Json.Decode.Extra.andMap
+                                 (Json.Decode.field
+                                      "g"
+                                      (Json.Decode.map
+                                           Set.fromList
+                                           (Json.Decode.list Json.Decode.int)
+                                      )
+                                 )
+                                 (Json.Decode.Extra.andMap
+                                      (Json.Decode.field
+                                           "f"
+                                           (Json.Decode.oneOf
+                                                [ Json.Decode.andThen
+                                                    (\andThenUnpack ->
+                                                       if
+                                                           Tuple.first
+                                                               andThenUnpack == "Right"
+                                                       then
+                                                           Json.Decode.succeed
+                                                               (Result.Ok
+                                                                    (Tuple.second
+                                                                         andThenUnpack
+                                                                    )
+                                                               )
+
+                                                       else
+                                                           Json.Decode.fail
+                                                               "Not a Ok"
+                                                    )
+                                                    (Json.Decode.map2
+                                                       (\map2Unpack ->
+                                                          \unpack ->
+                                                              ( map2Unpack
+                                                              , unpack
+                                                              )
+                                                       )
+                                                       (Json.Decode.field
+                                                          "_tag"
+                                                          Json.Decode.string
+                                                       )
+                                                       (Json.Decode.field
+                                                          "right"
+                                                          (Json.Decode.oneOf
+                                                             [ Json.Decode.andThen
+                                                                   (\andThenUnpack ->
+                                                                        if
+                                                                            Tuple.first
+                                                                                andThenUnpack == "Right"
+                                                                        then
+                                                                            Json.Decode.succeed
+                                                                                (Result.Ok
+                                                                                     (Tuple.second
+                                                                                          andThenUnpack
+                                                                                     )
+                                                                                )
+
+                                                                        else
+                                                                            Json.Decode.fail
+                                                                                "Not a Ok"
+                                                                   )
+                                                                   (Json.Decode.map2
+                                                                        (\map2Unpack ->
+                                                                             \unpack ->
+                                                                                 ( map2Unpack
+                                                                                 , unpack
+                                                                                 )
+                                                                        )
+                                                                        (Json.Decode.field
+                                                                             "_tag"
+                                                                             Json.Decode.string
+                                                                        )
+                                                                        (Json.Decode.field
+                                                                             "right"
+                                                                             (Json.Decode.oneOf
+                                                                                  [ Json.Decode.andThen
+                                                                                      (\andThenUnpack ->
+                                                                                         if
+                                                                                             Tuple.first
+                                                                                                 andThenUnpack == "Some"
+                                                                                         then
+                                                                                             Json.Decode.succeed
+                                                                                                 (Just
+                                                                                                      (Tuple.second
+                                                                                                           andThenUnpack
+                                                                                                      )
+                                                                                                 )
+
+                                                                                         else
+                                                                                             Json.Decode.fail
+                                                                                                 "Not a Just"
+                                                                                      )
+                                                                                      (Json.Decode.map2
+                                                                                         (\map2Unpack ->
+                                                                                            \unpack ->
+                                                                                                ( map2Unpack
+                                                                                                , unpack
+                                                                                                )
+                                                                                         )
+                                                                                         (Json.Decode.field
+                                                                                            "_tag"
+                                                                                            Json.Decode.string
+                                                                                         )
+                                                                                         (Json.Decode.field
+                                                                                            "value"
+                                                                                            (Json.Decode.list
+                                                                                               Json.Decode.string
+                                                                                            )
+                                                                                         )
+                                                                                      )
+                                                                                  , Json.Decode.andThen
+                                                                                      (\andThenUnpack ->
+                                                                                         if
+                                                                                             andThenUnpack == "None"
+                                                                                         then
+                                                                                             Json.Decode.succeed
+                                                                                                 Nothing
+
+                                                                                         else
+                                                                                             Json.Decode.fail
+                                                                                                 "Not a Nothing"
+                                                                                      )
+                                                                                      (Json.Decode.field
+                                                                                         "_tag"
+                                                                                         Json.Decode.string
+                                                                                      )
+                                                                                  ]
+                                                                             )
+                                                                        )
+                                                                   )
+                                                             , Json.Decode.andThen
+                                                                   (\andThenUnpack ->
+                                                                        if
+                                                                            Tuple.first
+                                                                                andThenUnpack == "Left"
+                                                                        then
+                                                                            Json.Decode.succeed
+                                                                                (Result.Err
+                                                                                     (Tuple.second
+                                                                                          andThenUnpack
+                                                                                     )
+                                                                                )
+
+                                                                        else
+                                                                            Json.Decode.fail
+                                                                                "Not a Err"
+                                                                   )
+                                                                   (Json.Decode.map2
+                                                                        (\map2Unpack ->
+                                                                             \unpack ->
+                                                                                 ( map2Unpack
+                                                                                 , unpack
+                                                                                 )
+                                                                        )
+                                                                        (Json.Decode.field
+                                                                             "_tag"
+                                                                             Json.Decode.string
+                                                                        )
+                                                                        (Json.Decode.field
+                                                                             "left"
+                                                                             Json.Decode.string
+                                                                        )
+                                                                   )
+                                                             ]
+                                                          )
+                                                       )
+                                                    )
+                                                , Json.Decode.andThen
+                                                    (\andThenUnpack ->
+                                                       if
+                                                           Tuple.first
+                                                               andThenUnpack == "Left"
+                                                       then
+                                                           Json.Decode.succeed
+                                                               (Result.Err
+                                                                    (Tuple.second
+                                                                         andThenUnpack
+                                                                    )
+                                                               )
+
+                                                       else
+                                                           Json.Decode.fail
+                                                               "Not a Err"
+                                                    )
+                                                    (Json.Decode.map2
+                                                       (\map2Unpack ->
+                                                          \unpack ->
+                                                              ( map2Unpack
+                                                              , unpack
+                                                              )
+                                                       )
+                                                       (Json.Decode.field
+                                                          "_tag"
+                                                          Json.Decode.string
+                                                       )
+                                                       (Json.Decode.field
+                                                          "left"
+                                                          Json.Decode.string
+                                                       )
+                                                    )
+                                                ]
+                                           )
+                                      )
+                                      (Json.Decode.Extra.andMap
+                                           (Json.Decode.field
+                                                "e"
+                                                (Json.Decode.andThen
+                                                     (\andThenUnpack ->
+                                                          case
+                                                              String.uncons
+                                                                  andThenUnpack
+                                                          of
+                                                              Nothing ->
+                                                                  Json.Decode.fail
+                                                                      "Not a Char"
+
+                                                              Just ( char, "" ) ->
+                                                                  Json.Decode.succeed
+                                                                      char
+
+                                                              _ ->
+                                                                  Json.Decode.fail
+                                                                      "Not a Char"
+                                                     )
+                                                     Json.Decode.string
+                                                )
+                                           )
+                                           (Json.Decode.Extra.andMap
+                                                (Json.Decode.field
+                                                     "d"
+                                                     (Json.Decode.andThen
+                                                          (\andThenUnpack ->
+                                                               case
+                                                                   String.uncons
+                                                                       andThenUnpack
+                                                               of
+                                                                   Nothing ->
+                                                                       Json.Decode.fail
+                                                                           "Not a Char"
+
+                                                                   Just ( char, "" ) ->
+                                                                       Json.Decode.succeed
+                                                                           char
+
+                                                                   _ ->
+                                                                       Json.Decode.fail
+                                                                           "Not a Char"
+                                                          )
+                                                          Json.Decode.string
+                                                     )
+                                                )
+                                                (Json.Decode.Extra.andMap
+                                                     (Json.Decode.field
+                                                          "c"
+                                                          (Json.Decode.oneOf
+                                                               [ Json.Decode.andThen
+                                                                   (\andThenUnpack ->
+                                                                      if
+                                                                          Tuple.first
+                                                                              andThenUnpack == "Some"
+                                                                      then
+                                                                          Json.Decode.succeed
+                                                                              (Just
+                                                                                   (Tuple.second
+                                                                                        andThenUnpack
+                                                                                   )
+                                                                              )
+
+                                                                      else
+                                                                          Json.Decode.fail
+                                                                              "Not a Just"
+                                                                   )
+                                                                   (Json.Decode.map2
+                                                                      (\map2Unpack ->
+                                                                         \unpack ->
+                                                                             ( map2Unpack
+                                                                             , unpack
+                                                                             )
+                                                                      )
+                                                                      (Json.Decode.field
+                                                                         "_tag"
+                                                                         Json.Decode.string
+                                                                      )
+                                                                      (Json.Decode.field
+                                                                         "value"
+                                                                         Json.Decode.int
+                                                                      )
+                                                                   )
+                                                               , Json.Decode.andThen
+                                                                   (\andThenUnpack ->
+                                                                      if
+                                                                          andThenUnpack == "None"
+                                                                      then
+                                                                          Json.Decode.succeed
+                                                                              Nothing
+
+                                                                      else
+                                                                          Json.Decode.fail
+                                                                              "Not a Nothing"
+                                                                   )
+                                                                   (Json.Decode.field
+                                                                      "_tag"
+                                                                      Json.Decode.string
+                                                                   )
+                                                               ]
+                                                          )
+                                                     )
+                                                     (Json.Decode.Extra.andMap
+                                                          (Json.Decode.field
+                                                               "b"
+                                                               (Json.Decode.list
+                                                                    (Json.Decode.andThen
+                                                                         (\andThenUnpack ->
+                                                                              case
+                                                                                  String.uncons
+                                                                                      andThenUnpack
+                                                                              of
+                                                                                  Nothing ->
+                                                                                      Json.Decode.fail
+                                                                                          "Not a Char"
+
+                                                                                  Just ( char, "" ) ->
+                                                                                      Json.Decode.succeed
+                                                                                          char
+
+                                                                                  _ ->
+                                                                                      Json.Decode.fail
+                                                                                          "Not a Char"
+                                                                         )
+                                                                         Json.Decode.string
+                                                                    )
+                                                               )
+                                                          )
+                                                          (Json.Decode.Extra.andMap
+                                                               (Json.Decode.field
+                                                                    "a"
+                                                                    (Json.Decode.andThen
+                                                                         (\andThenUnpack ->
+                                                                              case
+                                                                                  String.uncons
+                                                                                      andThenUnpack
+                                                                              of
+                                                                                  Nothing ->
+                                                                                      Json.Decode.fail
+                                                                                          "Not a Char"
+
+                                                                                  Just ( char, "" ) ->
+                                                                                      Json.Decode.succeed
+                                                                                          char
+
+                                                                                  _ ->
+                                                                                      Json.Decode.fail
+                                                                                          "Not a Char"
+                                                                         )
+                                                                         Json.Decode.string
+                                                                    )
+                                                               )
+                                                               (Json.Decode.succeed
+                                                                    (\a b c d e f g h i j ->
+                                                                         { a = a
+                                                                         , b = b
+                                                                         , c = c
+                                                                         , d = d
+                                                                         , e = e
+                                                                         , f = f
+                                                                         , g = g
+                                                                         , h = h
+                                                                         , i = i
+                                                                         , j = j
+                                                                         }
+                                                                    )
+                                                               )
+                                                          )
+                                                     )
+                                                )
+                                           )
+                                      )
+                                 )
+                            )
+                       )
+                  )
+             )
+        )
+
+
 myComplexDictDecoder : Json.Decode.Decoder Generated.EffectTypes.MyComplexDict
 myComplexDictDecoder =
     Json.Decode.map
@@ -334,6 +779,15 @@ myMaybeDecoder =
         ]
 
 
+myNestedArrayDecoder : Json.Decode.Decoder Generated.EffectTypes.MyNestedArray
+myNestedArrayDecoder =
+    Json.Decode.map
+        Array.fromList
+        (Json.Decode.list
+             (Json.Decode.map Array.fromList (Json.Decode.list Json.Decode.int))
+        )
+
+
 myNestedDictDecoder : Json.Decode.Decoder Generated.EffectTypes.MyNestedDict
 myNestedDictDecoder =
     Json.Decode.map
@@ -389,7 +843,23 @@ myNestedTripleDecoder =
                   (Json.Decode.index 2 Json.Decode.string)
              )
         )
-        (Json.Decode.index 2 Json.Decode.string)
+        (Json.Decode.index
+             2
+             (Json.Decode.andThen
+                  (\andThenUnpack ->
+                       case String.uncons andThenUnpack of
+                           Nothing ->
+                               Json.Decode.fail "Not a Char"
+
+                           Just ( char, "" ) ->
+                               Json.Decode.succeed char
+
+                           _ ->
+                               Json.Decode.fail "Not a Char"
+                  )
+                  Json.Decode.string
+             )
+        )
 
 
 myNestedTupleDecoder : Json.Decode.Decoder Generated.EffectTypes.MyNestedTuple

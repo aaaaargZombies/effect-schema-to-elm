@@ -113,8 +113,32 @@ export const mySchemas = {
       Data.Bool,
       Data.String,
     ),
-    Data.String,
+    Data.Char,
   ),
   mySet: Data.Set_(Data.Int),
   myArray: Data.Array(Data.Bool),
+  myComplexArray: Data.Array(
+    Data.Record({
+      a: Data.Char,
+      b: Data.List(Data.Char),
+      c: Data.Maybe(Data.Int),
+      d: Data.Char,
+      e: Data.Char,
+      f: Data.Result({
+        error: Data.String,
+        value: Data.Result({
+          error: Data.String,
+          value: Data.Maybe(Data.List(Data.String)),
+        }),
+      }),
+      g: Data.Set_(Data.Int),
+      h: Data.Char,
+      i: Data.Record({
+        one: Data.Char,
+        two: Data.String,
+      }),
+      j: Data.Float,
+    }),
+  ),
+  myNestedArray: Data.Array(Data.Array(Data.Int)),
 };

@@ -23,6 +23,106 @@ myCharEncoder arg =
     Json.Encode.string (String.fromChar arg)
 
 
+myComplexArrayEncoder :
+    Generated.EffectTypes.MyComplexArray -> Json.Encode.Value
+myComplexArrayEncoder arg =
+    Json.Encode.list
+        (\arg0 ->
+             Json.Encode.object
+                 [ ( "a", Json.Encode.string (String.fromChar arg0.a) )
+                 , ( "b"
+                   , Json.Encode.list
+                         (\arg_1_2_1_1_1_0_0 ->
+                              Json.Encode.string
+                                  (String.fromChar arg_1_2_1_1_1_0_0)
+                         )
+                         arg0.b
+                   )
+                 , ( "c"
+                   , case arg0.c of
+                         Nothing ->
+                             Json.Encode.object
+                                 [ ( "_tag", Json.Encode.string "None" ) ]
+
+                         Just value ->
+                             Json.Encode.object
+                                 [ ( "_tag", Json.Encode.string "Some" )
+                                 , ( "value", Json.Encode.int value )
+                                 ]
+                   )
+                 , ( "d", Json.Encode.string (String.fromChar arg0.d) )
+                 , ( "e", Json.Encode.string (String.fromChar arg0.e) )
+                 , ( "f"
+                   , case arg0.f of
+                         Ok ok ->
+                             Json.Encode.object
+                                 [ ( "_tag", Json.Encode.string "Right" )
+                                 , ( "right"
+                                   , case ok of
+                                         Ok ok0 ->
+                                             Json.Encode.object
+                                                 [ ( "_tag"
+                                                   , Json.Encode.string "Right"
+                                                   )
+                                                 , ( "right"
+                                                   , case ok0 of
+                                                         Nothing ->
+                                                             Json.Encode.object
+                                                                 [ ( "_tag"
+                                                                   , Json.Encode.string
+                                                                         "None"
+                                                                   )
+                                                                 ]
+
+                                                         Just value ->
+                                                             Json.Encode.object
+                                                                 [ ( "_tag"
+                                                                   , Json.Encode.string
+                                                                         "Some"
+                                                                   )
+                                                                 , ( "value"
+                                                                   , Json.Encode.list
+                                                                         Json.Encode.string
+                                                                         value
+                                                                   )
+                                                                 ]
+                                                   )
+                                                 ]
+
+                                         Err err ->
+                                             Json.Encode.object
+                                                 [ ( "_tag"
+                                                   , Json.Encode.string "Left"
+                                                   )
+                                                 , ( "left"
+                                                   , Json.Encode.string err
+                                                   )
+                                                 ]
+                                   )
+                                 ]
+
+                         Err err ->
+                             Json.Encode.object
+                                 [ ( "_tag", Json.Encode.string "Left" )
+                                 , ( "left", Json.Encode.string err )
+                                 ]
+                   )
+                 , ( "g", Json.Encode.list Json.Encode.int (Set.toList arg0.g) )
+                 , ( "h", Json.Encode.string (String.fromChar arg0.h) )
+                 , ( "i"
+                   , Json.Encode.object
+                         [ ( "one"
+                           , Json.Encode.string (String.fromChar arg0.i.one)
+                           )
+                         , ( "two", Json.Encode.string arg0.i.two )
+                         ]
+                   )
+                 , ( "j", Json.Encode.float arg0.j )
+                 ]
+        )
+        (Array.toList arg)
+
+
 myComplexDictEncoder : Generated.EffectTypes.MyComplexDict -> Json.Encode.Value
 myComplexDictEncoder arg =
     Json.Encode.list
@@ -226,6 +326,13 @@ myMaybeEncoder arg =
                 ]
 
 
+myNestedArrayEncoder : Generated.EffectTypes.MyNestedArray -> Json.Encode.Value
+myNestedArrayEncoder arg =
+    Json.Encode.list
+        (\arg0 -> Json.Encode.list Json.Encode.int (Array.toList arg0))
+        (Array.toList arg)
+
+
 myNestedDictEncoder : Generated.EffectTypes.MyNestedDict -> Json.Encode.Value
 myNestedDictEncoder arg =
     Json.Encode.list
@@ -302,7 +409,7 @@ myNestedTripleEncoder arg =
             , Json.Encode.bool (Triple.Extra.second (Triple.Extra.second arg))
             , Json.Encode.string (Triple.Extra.third (Triple.Extra.second arg))
             ]
-        , Json.Encode.string (Triple.Extra.third arg)
+        , Json.Encode.string (String.fromChar (Triple.Extra.third arg))
         ]
 
 

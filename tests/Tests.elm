@@ -59,6 +59,8 @@ suite =
             , decoderTestHelper "NestedTriple decoder" TestData.myNestedTripleJson EffectDecoders.myNestedTripleDecoder
             , decoderTestHelper "Set decoder" TestData.mySetJson EffectDecoders.mySetDecoder
             , decoderTestHelper "Array decoder" TestData.myArrayJson EffectDecoders.myArrayDecoder
+            , decoderTestHelper "ComplexArray decoder" TestData.myComplexArrayJson EffectDecoders.myComplexArrayDecoder
+            , decoderTestHelper "NestedArray decoder" TestData.myNestedArrayJson EffectDecoders.myNestedArrayDecoder
             ]
         , Test.describe "generated encoders vs Effect arbitraries"
             [ encoderTestHelper "Bool decoder" TestData.myBoolJson EffectDecoders.myBoolDecoder EffectEncoders.myBoolEncoder
@@ -85,5 +87,7 @@ suite =
             , encoderTestHelper "NestedTriple encoder" TestData.myNestedTripleJson EffectDecoders.myNestedTripleDecoder EffectEncoders.myNestedTripleEncoder
             , encoderTestHelper "Set encoder" TestData.mySetJson EffectDecoders.mySetDecoder EffectEncoders.mySetEncoder
             , encoderTestHelper "Array encoder" TestData.myArrayJson EffectDecoders.myArrayDecoder EffectEncoders.myArrayEncoder
+            , encoderTestHelper "ComplexArray encoder" TestData.myComplexArrayJson EffectDecoders.myComplexArrayDecoder EffectEncoders.myComplexArrayEncoder
+            , encoderTestHelper "NestedArray encoder" TestData.myNestedArrayJson EffectDecoders.myNestedArrayDecoder EffectEncoders.myNestedArrayEncoder
             ]
         ]
