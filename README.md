@@ -19,3 +19,7 @@ Currently this is really just some elm generators and a bunch of glue code pipin
 
 - `elm-community/json-extra`
 - `elmcraft/core-extra`
+
+## Useful resources
+
+- This repo was made using [Effect CLI Application Template](https://github.com/Effect-TS/examples/blob/main/templates/cli/README.md) though has no CLI capabilites.
