@@ -13,7 +13,7 @@ Currently this is really just some elm generators and a bunch of glue code pipin
 - `nix develop --command zsh` if you want don't have all the system deps.
 - `pnpm install` to get node dependancies.
 - `pnpm run generate` to create the elm code.
-- `pnpm run test:all` to test the generated elm decoders against arbitraries created from schemas and then to test elm decoders against the schemas again.
+- `pnpm run test:all` to test the generated elm decoders against arbitraries created from schemas and then to test elm encoders against the schemas again.
 
 ## Deps introduced to project for a user
 
