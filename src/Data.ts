@@ -2,7 +2,7 @@ import { pipe, Schema } from "effect";
 
 const ElmType = Symbol.for("ElmType");
 
-// TODO better type for this
+// TODO: better type for this
 type Comparable =
   | typeof Bool
   | typeof Char
@@ -47,7 +47,7 @@ export const Char = Schema.String.pipe(
   }),
 );
 
-// TODO Schema.decodeSync(Char)("sss"); // how to ge the type warnings like on duration???
+// TODO: Schema.decodeSync(Char)("sss"); // how to ge the type warnings like on duration???
 
 // String
 export const String = Schema.String.pipe(
@@ -137,7 +137,7 @@ export const Result = (args: {
   );
 
 // Set
-// TODO and Elm.Set
+// TODO: and Elm.Set
 // child needs to be Comparable
 export const Set_ = (a: Comparable) =>
   Schema.HashSet(a).pipe(
@@ -171,7 +171,7 @@ export const Unit = Schema.Tuple();
 
 /// Custom types / Type Aliases?
 
-// TODO this needs to be better
+// TODO: this needs to be better
 // kinds probables needs to be Schema.Struct{ _tag: Schema.string, data: Schama.Tuple/Array()}
 // I want it to be a union of structs where all the inner types have a `_tag` field
 
@@ -180,8 +180,7 @@ type CustomTypeVariantArg = {
   [key: string]: Schema.Schema.Any;
 };
 
-// TODO is this a good API for folks making a custom type?
-// how ill I decode it?
+// TODO: is this a good API for folks making a custom type?
 export const CustomType = (
   name: string,
   kind: CustomTypeVariantArg,
