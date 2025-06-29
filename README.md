@@ -1,45 +1,22 @@
-# Effect CLI Application Template
+# Effect.Schema to Elm
 
-This template provides a solid foundation for building scalable and maintainable command-line applications with Effect.
+A proof of concept to generate Elm Types, Decoders and Encoders from Effect Schemas.
 
-## Running Code
+Compatible elm types are described in `src/Data.ts` These can be fed into elm-codegen via the `.src/generate.ts`. Passing an object where the keys will become the alias of the type in elm.
 
-This template leverages [tsx](https://tsx.is) to allow execution of TypeScript files via NodeJS as if they were written in plain JavaScript.
+I've not taken to approach of converting arbitrary Schema types to Elm types as I think this creates a more predictable outcome and it's easier to do a `Schema.transform` or `Decoder.map` to get to and from your desired data structure than it is to write the glue between the two languages.
 
-To execute a file with `tsx`:
+Currently this is really just some elm generators and a bunch of glue code piping test data back and forth. More thought needs to go into making it useable with an external project.
 
-```sh
-pnpm tsx ./path/to/the/file.ts
-```
+## Running locally
 
-## Operations
+- `nix develop --command zsh` if you want don't have all the system deps.
+- `pnpm install` to get node dependancies.
+- `pnpm run generate` to create the elm code.
+- `pnpm run test:all` to test the generated elm decoders against arbitraries created from schemas and then to test elm decoders against the schemas again.
 
-**Building**
+## Deps introduced to project for a user
 
-To build the package:
-
-```sh
-pnpm build
-```
-
-**Testing**
-
-To test the package:
-
-```sh
-pnpm test
-```
-
-## TODO / BUGS
-
-### Express `Comparable` better
-
-Ideally this would be via a Comparable TS type to match Elm types, need to have something like `List<Comparable>`
-
-Could potentially add a Schema Annotation like I have done with `"Symbol(ElmType)"`
-
-```typescript
-type Comparable = typeof Char | typeof String | typeof Int | typeof Float;
-```
-
-[view code in context](https://github.com/aaaaargZombies/effect-schema-to-elm/blob/fced363fcc5cca3087accdd7f616a574710adff9/src/Data.ts#L5-L7)
+- `elm-community/json-extra`
+- `elmcraft/core-extra`
+- `Effect.Schema`
