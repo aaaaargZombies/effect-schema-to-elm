@@ -19,4 +19,3 @@ Currently this is really just some elm generators and a bunch of glue code pipin
 
 - `elm-community/json-extra`
 - `elmcraft/core-extra`
-- `Effect.Schema`
